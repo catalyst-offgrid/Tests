@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Household Electricity Consumption Waterfall — Nigeria Archetype</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#FAFAF8;color:#2C2C2A;padding:2rem 2.5rem 3rem}
+.header{max-width:1200px;margin:0 auto 1.5rem}
+.header h1{font-family:'Source Serif 4',Georgia,serif;font-size:1.65rem;font-weight:600;color:#1a1a18;letter-spacing:-0.02em;line-height:1.3}
+.header .subtitle{font-size:0.85rem;color:#888780;margin-top:0.35rem;letter-spacing:0.01em}
+.controls{max-width:1200px;margin:0 auto 1.25rem;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.scenario-toggle{display:flex;border:1px solid #D3D1C7;border-radius:8px;overflow:hidden}
+.scenario-btn{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:7px 18px;border:none;cursor:pointer;transition:all 0.15s;background:#fff;color:#5F5E5A}
+.scenario-btn.active{background:#2C2C2A;color:#FAFAF8}
+.scenario-btn:hover:not(.active){background:#F1EFE8}
+.scenario-label{font-size:12px;color:#888780}
+.scenario-summary{font-size:12.5px;color:#5F5E5A;margin-left:auto;text-align:right}
+.scenario-summary strong{font-weight:700;color:#2C2C2A}
+.chart-container{max-width:1200px;margin:0 auto;position:relative}
+.chart-wrapper{width:100%;overflow-x:auto;padding-bottom:0.5rem}
+.chart-inner{min-width:900px;height:520px;position:relative}
+svg{width:100%;height:100%;display:block}
+.bar-block{cursor:pointer;transition:opacity 0.15s}
+.bar-block:hover{opacity:0.85}
+.threshold-line{stroke-dasharray:6,4;stroke-width:1}
+.threshold-label{font-size:10px;fill:#888780;font-family:'DM Sans',sans-serif}
+.axis-label{font-size:10.5px;fill:#5F5E5A;font-family:'DM Sans',sans-serif}
+.axis-title{font-size:11px;fill:#5F5E5A;font-family:'DM Sans',sans-serif;font-weight:500}
+.gridline{stroke:#E8E7E2;stroke-width:0.5}
+.tooltip{position:fixed;background:#fff;border:1px solid #D3D1C7;border-radius:8px;padding:12px 16px;font-size:12.5px;line-height:1.65;box-shadow:0 4px 20px rgba(0,0,0,0.08);pointer-events:none;opacity:0;transition:opacity 0.12s;z-index:100;max-width:280px}
+.tooltip .tt-name{font-weight:700;font-size:13px;margin-bottom:4px;color:#1a1a18}
+.tooltip .tt-cat{display:inline-block;padding:1px 8px;border-radius:4px;font-size:10.5px;font-weight:500;margin-bottom:6px}
+.tooltip .tt-row{display:flex;justify-content:space-between;gap:16px}
+.tooltip .tt-label{color:#888780}
+.tooltip .tt-val{font-weight:500;color:#2C2C2A}
+.legend{max-width:1200px;margin:1.25rem auto 0;display:flex;flex-wrap:wrap;gap:14px 20px;font-size:12px;color:#5F5E5A}
+.legend-item{display:flex;align-items:center;gap:5px}
+.legend-swatch{width:12px;height:12px;border-radius:2px}
+.thresholds-toggle{max-width:1200px;margin:1rem auto 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.thresh-btn{font-family:'DM Sans',sans-serif;font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid #D3D1C7;background:#fff;color:#5F5E5A;cursor:pointer;transition:all 0.15s}
+.thresh-btn.active{background:#2C2C2A;color:#FAFAF8;border-color:#2C2C2A}
+.thresh-btn:hover:not(.active){background:#F1EFE8}
+.note{max-width:1200px;margin:1.5rem auto 0;font-size:11.5px;color:#888780;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>Household electricity consumption waterfall — Nigeria archetype</h1>
+<div class="subtitle" id="subtitle">Efficient scenario · Household size: 5 · Per capita kWh/year</div>
+</div>
+
+<div class="controls">
+<span class="scenario-label">Scenario:</span>
+<div class="scenario-toggle" id="scenarioToggle">
+<button class="scenario-btn active" data-scenario="efficient">Efficient</button>
+<button class="scenario-btn" data-scenario="typical">Current typical</button>
+</div>
+<div class="scenario-summary" id="scenarioSummary"></div>
+</div>
+
+<div class="chart-container">
+<div class="chart-wrapper">
+<div class="chart-inner" id="chartArea"></div>
+</div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<div class="legend" id="legend"></div>
+
+<div class="thresholds-toggle" id="threshToggle"></div>
+
+<div class="note">
+Source: Catalyst Advisors analysis for the Rockefeller Foundation. Appliance ownership sequencing informed by Nigeria General Household Survey Panel Wave 5.
+Efficient scenario assumes modern, best-available-but-affordable technology. Current typical scenario reflects appliances commonly purchased in sub-Saharan African markets today.
+All figures assume 100% electrification of each activity.
+</div>
+
+<script>
+const dataEfficient = [
+  {name:"Lighting (full home)",base:0,block:17.52,cat:"Lighting",cumul:17.52},
+  {name:"Phones, radio & small devices",base:17.52,block:5.475,cat:"Information",cumul:22.995},
+  {name:"Fan (1st unit)",base:22.995,block:39.42,cat:"Comfort",cumul:62.415},
+  {name:"Television (1st unit)",base:62.415,block:12.775,cat:"Information",cumul:75.19},
+  {name:"Pressing iron",base:75.19,block:20.8,cat:"Laundry",cumul:95.99},
+  {name:"Fan (2nd unit)",base:95.99,block:32.85,cat:"Comfort",cumul:128.84},
+  {name:"Refrigerator",base:128.84,block:73.584,cat:"Food Preservation",cumul:202.424},
+  {name:"Kettle & blender",base:202.424,block:30.66,cat:"Small Appliances",cumul:233.084},
+  {name:"Laptop & internet",base:233.084,block:17.52,cat:"Information",cumul:250.604},
+  {name:"Borehole water pump (shared)",base:250.604,block:4.5625,cat:"Infrastructure",cumul:255.167},
+  {name:"Chest freezer",base:255.167,block:73.584,cat:"Food Preservation",cumul:328.751},
+  {name:"Air conditioner (1st unit)",base:328.751,block:210,cat:"Space Cooling",cumul:538.751},
+  {name:"Microwave oven",base:538.751,block:10,cat:"Cooking",cumul:548.751},
+  {name:"Fan (3rd unit)",base:548.751,block:26.28,cat:"Comfort",cumul:575.031},
+  {name:"Television (2nd unit)",base:575.031,block:5.11,cat:"Information",cumul:580.141},
+  {name:"AC (2nd & 3rd unit)",base:580.141,block:240,cat:"Space Cooling",cumul:820.141},
+  {name:"Washing machine",base:820.141,block:5.85,cat:"Laundry",cumul:825.991},
+  {name:"Kitchen extractor",base:825.991,block:10.5,cat:"Cooking",cumul:836.491},
+  {name:"Home security (CCTV)",base:836.491,block:52.56,cat:"Security",cumul:889.051},
+  {name:"Electric pressure cooker",base:889.051,block:61.32,cat:"Cooking",cumul:950.371},
+  {name:"Electric hob",base:950.371,block:73,cat:"Cooking",cumul:1023.371},
+  {name:"Electric motorcycle",base:1023.371,block:51.584,cat:"Mobility",cumul:1074.955},
+  {name:"Water heater",base:1074.955,block:52.083,cat:"Hot Water",cumul:1127.038},
+  {name:"Electric car",base:1127.038,block:273.728,cat:"Mobility",cumul:1400.766},
+  {name:"Electric oven",base:1400.766,block:46.8,cat:"Cooking",cumul:1447.566},
+  {name:"Dishwasher",base:1447.566,block:49.92,cat:"Small Appliances",cumul:1497.486},
+  {name:"Clothes dryer",base:1497.486,block:12.96,cat:"Laundry",cumul:1510.446}
+];
+
+const dataTypical = [
+  {name:"Lighting (full home)",base:0,block:24.528,cat:"Lighting",cumul:24.528},
+  {name:"Phones, radio & small devices",base:24.528,block:6.204,cat:"Information",cumul:30.732},
+  {name:"Fan (1st unit)",base:30.732,block:48.18,cat:"Comfort",cumul:78.912},
+  {name:"Television (1st unit)",base:78.912,block:18.25,cat:"Information",cumul:97.162},
+  {name:"Pressing iron",base:97.162,block:24.96,cat:"Laundry",cumul:122.122},
+  {name:"Fan (2nd unit)",base:122.122,block:40.15,cat:"Comfort",cumul:162.272},
+  {name:"Refrigerator",base:162.272,block:161.184,cat:"Food Preservation",cumul:323.456},
+  {name:"Kettle & blender",base:323.456,block:38.324,cat:"Small Appliances",cumul:361.780},
+  {name:"Laptop & internet",base:361.780,block:25.184,cat:"Information",cumul:386.964},
+  {name:"Borehole water pump (shared)",base:386.964,block:4.562,cat:"Infrastructure",cumul:391.526},
+  {name:"Chest freezer",base:391.526,block:145.416,cat:"Food Preservation",cumul:536.942},
+  {name:"Air conditioner (1st unit)",base:536.942,block:357,cat:"Space Cooling",cumul:893.942},
+  {name:"Microwave oven",base:893.942,block:12,cat:"Cooking",cumul:905.942},
+  {name:"Fan (3rd unit)",base:905.942,block:32.12,cat:"Comfort",cumul:938.062},
+  {name:"Television (2nd unit)",base:938.062,block:7.3,cat:"Information",cumul:945.362},
+  {name:"AC (2nd & 3rd unit)",base:945.362,block:408,cat:"Space Cooling",cumul:1353.362},
+  {name:"Washing machine",base:1353.362,block:7.8,cat:"Laundry",cumul:1361.162},
+  {name:"Kitchen extractor",base:1361.162,block:15.75,cat:"Cooking",cumul:1376.912},
+  {name:"Home security (CCTV)",base:1376.912,block:78.84,cat:"Security",cumul:1455.752},
+  {name:"Electric pressure cooker",base:1455.752,block:78.84,cat:"Cooking",cumul:1534.592},
+  {name:"Electric hob",base:1534.592,block:102.2,cat:"Cooking",cumul:1636.792},
+  {name:"Electric motorcycle",base:1636.792,block:73.904,cat:"Mobility",cumul:1710.696},
+  {name:"Water heater",base:1710.696,block:72.916,cat:"Hot Water",cumul:1783.612},
+  {name:"Electric car",base:1783.612,block:368.928,cat:"Mobility",cumul:2152.540},
+  {name:"Electric oven",base:2152.540,block:61.2,cat:"Cooking",cumul:2213.740},
+  {name:"Dishwasher",base:2213.740,block:58.24,cat:"Small Appliances",cumul:2271.980},
+  {name:"Clothes dryer",base:2271.980,block:31.68,cat:"Laundry",cumul:2303.660}
+];
+
+let currentScenario = "efficient";
+
+const catColors = {
+  "Lighting":"#EF9F27","Information":"#3266ad","Comfort":"#378ADD","Laundry":"#73726c",
+  "Small Appliances":"#97C459","Food Preservation":"#1D9E75","Cooking":"#D85A30",
+  "Space Cooling":"#7F77DD","Infrastructure":"#888780","Security":"#444441",
+  "Mobility":"#BA7517","Hot Water":"#D4537E"
+};
+
+const catTooltipBg = {
+  "Lighting":"#FAEEDA","Information":"#E6F1FB","Comfort":"#E6F1FB","Laundry":"#F1EFE8",
+  "Small Appliances":"#EAF3DE","Food Preservation":"#E1F5EE","Cooking":"#FAECE7",
+  "Space Cooling":"#EEEDFE","Infrastructure":"#F1EFE8","Security":"#F1EFE8",
+  "Mobility":"#FAEEDA","Hot Water":"#FBEAF0"
+};
+
+const catTooltipText = {
+  "Lighting":"#633806","Information":"#0C447C","Comfort":"#0C447C","Laundry":"#444441",
+  "Small Appliances":"#27500A","Food Preservation":"#085041","Cooking":"#712B13",
+  "Space Cooling":"#3C3489","Infrastructure":"#444441","Security":"#2C2C2A",
+  "Mobility":"#633806","Hot Water":"#72243E"
+};
+
+const thresholds = [
+  {label:"MTF Tier 2",val:14.6,color:"#B4B2A9"},
+  {label:"MTF Tier 3",val:73,color:"#97C459"},
+  {label:"MEM / MTF Tier 4",val:250,color:"#378ADD"},
+  {label:"RF Potential Target",val:1000,color:"#D85A30"},
+  {label:"US residential (4,381)",val:4381,color:"#7F77DD"}
+];
+
+let activeThresh = new Set(["MTF Tier 2","MTF Tier 3","MEM / MTF Tier 4","RF Potential Target"]);
+
+const margin = {top:20,right:160,bottom:120,left:58};
+const chartEl = document.getElementById("chartArea");
+const ttEl = document.getElementById("tooltip");
+
+function getData(){ return currentScenario === "efficient" ? dataEfficient : dataTypical; }
+
+function updateSummary(){
+  const data = getData();
+  const total = data[data.length-1].cumul;
+  const scenarioName = currentScenario === "efficient" ? "Efficient" : "Current typical";
+  document.getElementById("subtitle").textContent = scenarioName + " scenario \u00B7 Household size: 5 \u00B7 Per capita kWh/year";
+  document.getElementById("scenarioSummary").innerHTML =
+    "Total: <strong>" + Math.round(total).toLocaleString() + " kWh/cap</strong> \u00B7 <strong>" + Math.round(total*5).toLocaleString() + " kWh/household</strong>";
+}
+
+function render(){
+  const data = getData();
+  const W = Math.max(chartEl.clientWidth, 900);
+  const H = 520;
+  const plotW = W - margin.left - margin.right;
+  const plotH = H - margin.top - margin.bottom;
+
+  const maxVal = Math.max(data[data.length-1].cumul, ...Array.from(activeThresh).map(t=>thresholds.find(x=>x.label===t)?.val||0));
+  const yMax = Math.ceil(maxVal / 200) * 200 + 100;
+
+  const barW = Math.max(14, Math.min(30, (plotW / data.length) * 0.7));
+  const gap = (plotW - barW * data.length) / (data.length - 1);
+
+  const scaleY = v => plotH - (v / yMax) * plotH;
+  const barX = i => i * (barW + gap);
+
+  const gridSteps = [];
+  const gridInterval = yMax <= 600 ? 100 : yMax <= 1200 ? 200 : yMax <= 3000 ? 500 : 1000;
+  for(let v = 0; v <= yMax; v += gridInterval) gridSteps.push(v);
+
+  let svg = '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">';
+  svg += '<g transform="translate('+margin.left+','+margin.top+')">';
+
+  gridSteps.forEach(function(v){
+    var y = scaleY(v);
+    svg += '<line x1="0" y1="'+y+'" x2="'+plotW+'" y2="'+y+'" class="gridline"/>';
+    svg += '<text x="-8" y="'+(y+3.5)+'" text-anchor="end" class="axis-label">'+v.toLocaleString()+'</text>';
+  });
+
+  svg += '<text x="-42" y="'+(plotH/2)+'" transform="rotate(-90,-42,'+(plotH/2)+')" text-anchor="middle" class="axis-title">Per capita kWh / year</text>';
+
+  data.forEach(function(d,i){
+    var x = barX(i);
+    var yTop = scaleY(d.base + d.block);
+    var yBot = scaleY(d.base);
+    var barH = yBot - yTop;
+    var col = catColors[d.cat] || "#888";
+
+    if(i > 0){
+      var prevX = barX(i-1);
+      var connY = scaleY(d.base);
+      svg += '<line x1="'+(prevX + barW)+'" y1="'+connY+'" x2="'+x+'" y2="'+connY+'" stroke="#D3D1C7" stroke-width="0.5" stroke-dasharray="2,2"/>';
+    }
+
+    svg += '<rect class="bar-block" data-idx="'+i+'" x="'+x+'" y="'+yTop+'" width="'+barW+'" height="'+Math.max(barH,1)+'" rx="2" fill="'+col+'" style="animation:fadeUp 0.4s '+(i*0.03)+'s both"/>';
+
+    var labelX = x + barW/2;
+    var labelY = plotH + 12;
+    svg += '<text x="'+labelX+'" y="'+labelY+'" text-anchor="end" transform="rotate(-50,'+labelX+','+labelY+')" class="axis-label" style="font-size:9.5px">'+d.name+'</text>';
+  });
+
+  thresholds.forEach(function(t){
+    if(!activeThresh.has(t.label)) return;
+    if(t.val > yMax) return;
+    var y = scaleY(t.val);
+    svg += '<line x1="0" y1="'+y+'" x2="'+plotW+'" y2="'+y+'" class="threshold-line" stroke="'+t.color+'"/>';
+    svg += '<text x="'+(plotW + 4)+'" y="'+(y + 3)+'" class="threshold-label" fill="'+t.color+'" style="font-weight:500">'+t.label+'</text>';
+  });
+
+  svg += '</g></svg>';
+  svg += '<style>@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}</style>';
+
+  chartEl.innerHTML = svg;
+
+  document.querySelectorAll(".bar-block").forEach(function(el){
+    el.addEventListener("mouseenter", function(e){
+      var d = data[+el.dataset.idx];
+      var bg = catTooltipBg[d.cat]||"#F1EFE8";
+      var tc = catTooltipText[d.cat]||"#2C2C2A";
+      ttEl.innerHTML =
+        '<div class="tt-name">'+d.name+'</div>'+
+        '<div class="tt-cat" style="background:'+bg+';color:'+tc+'">'+d.cat+'</div>'+
+        '<div class="tt-row"><span class="tt-label">Per capita</span><span class="tt-val">'+Math.round(d.block)+' kWh/yr</span></div>'+
+        '<div class="tt-row"><span class="tt-label">Household (\u00D75)</span><span class="tt-val">'+Math.round(d.block*5).toLocaleString()+' kWh/yr</span></div>'+
+        '<div class="tt-row" style="border-top:1px solid #E8E7E2;padding-top:4px;margin-top:4px"><span class="tt-label">Cumulative per capita</span><span class="tt-val" style="font-weight:700">'+Math.round(d.cumul).toLocaleString()+' kWh</span></div>'+
+        '<div class="tt-row"><span class="tt-label">Cumulative household</span><span class="tt-val">'+Math.round(d.cumul*5).toLocaleString()+' kWh</span></div>';
+      ttEl.style.opacity = "1";
+    });
+    el.addEventListener("mousemove", function(e){
+      var x = e.clientX + 14;
+      var y = e.clientY - 10;
+      ttEl.style.left = (x + ttEl.offsetWidth > window.innerWidth - 20 ? e.clientX - ttEl.offsetWidth - 14 : x) + "px";
+      ttEl.style.top = Math.max(10, y) + "px";
+    });
+    el.addEventListener("mouseleave", function(){ ttEl.style.opacity = "0"; });
+  });
+
+  updateSummary();
+}
+
+var legendEl = document.getElementById("legend");
+var cats = [];
+dataEfficient.forEach(function(d){ if(cats.indexOf(d.cat)===-1) cats.push(d.cat); });
+cats.forEach(function(c){
+  legendEl.innerHTML += '<span class="legend-item"><span class="legend-swatch" style="background:'+catColors[c]+'"></span>'+c+'</span>';
+});
+
+document.querySelectorAll(".scenario-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    document.querySelectorAll(".scenario-btn").forEach(function(b){b.classList.remove("active");});
+    btn.classList.add("active");
+    currentScenario = btn.dataset.scenario;
+    render();
+  });
+});
+
+var toggleEl = document.getElementById("threshToggle");
+toggleEl.innerHTML = '<span style="font-size:11px;color:#888780;margin-right:4px">Thresholds:</span>';
+thresholds.forEach(function(t){
+  var btn = document.createElement("button");
+  btn.className = "thresh-btn" + (activeThresh.has(t.label) ? " active" : "");
+  btn.textContent = t.label;
+  btn.onclick = function(){
+    if(activeThresh.has(t.label)) activeThresh.delete(t.label); else activeThresh.add(t.label);
+    btn.classList.toggle("active");
+    render();
+  };
+  toggleEl.appendChild(btn);
+});
+
+render();
+window.addEventListener("resize", render);
+</script>
+</body>
+</html>
