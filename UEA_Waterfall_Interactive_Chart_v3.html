@@ -57,7 +57,7 @@ svg{width:100%;height:100%;display:block}
 <span class="scenario-label">Scenario:</span>
 <div class="scenario-toggle" id="scenarioToggle">
 <button class="scenario-btn active" data-scenario="efficient">Efficient</button>
-<button class="scenario-btn" data-scenario="typical">Current typical</button>
+<button class="scenario-btn" data-scenario="typical">Typical</button>
 </div>
 <div class="scenario-summary" id="scenarioSummary"></div>
 </div>
@@ -76,7 +76,7 @@ svg{width:100%;height:100%;display:block}
 
 <div class="note">
 Source: Catalyst Advisors analysis for the Rockefeller Foundation. Appliance ownership sequencing informed by Nigeria General Household Survey Panel Wave 5.
-Efficient scenario assumes modern, best-available-but-affordable technology. Current typical scenario reflects appliances commonly purchased in sub-Saharan African markets today.
+Efficient scenario assumes modern, best-available-but-affordable technology. Typical scenario reflects appliances commonly purchased in sub-Saharan African markets today.
 All figures assume 100% electrification of each activity.
 </div>
 
@@ -183,7 +183,7 @@ function getData(){ return currentScenario === "efficient" ? dataEfficient : dat
 function updateSummary(){
   const data = getData();
   const total = data[data.length-1].cumul;
-  const scenarioName = currentScenario === "efficient" ? "Efficient" : "Current typical";
+  const scenarioName = currentScenario === "efficient" ? "Efficient" : "Typical";
   document.getElementById("subtitle").textContent = scenarioName + " scenario \u00B7 Household size: 5 \u00B7 Per capita kWh/year";
   document.getElementById("scenarioSummary").innerHTML =
     "Total: <strong>" + Math.round(total).toLocaleString() + " kWh/cap</strong> \u00B7 <strong>" + Math.round(total*5).toLocaleString() + " kWh/household</strong>";
