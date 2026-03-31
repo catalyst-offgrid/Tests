@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EV vs. Gasoline: Fuel Cost Comparison by State</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --surface2: #f0ede6;
+    --border: rgba(0,0,0,0.10);
+    --border-strong: rgba(0,0,0,0.18);
+    --text: #1a1a17;
+    --text-2: #5c5c54;
+    --text-3: #9c9c90;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--text);
+    color: #fff;
+    padding: 2.5rem 2rem 2rem;
+  }
+  .header-inner { max-width: 1100px; margin: 0 auto; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 0.6rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+    font-weight: 300;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin-bottom: 0.75rem;
+  }
+  header h1 em { font-style: normal; color: #8fca6e; }
+  .header-desc {
+    font-size: 14px;
+    color: rgba(255,255,255,0.55);
+    max-width: 640px;
+    line-height: 1.65;
+  }
+
+  /* ── Main layout ── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* ── Explainer cards ── */
+  .explainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+  .exp-card { background: var(--surface); padding: 1.1rem 1.25rem; }
+  .exp-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 0.3rem;
+  }
+  .exp-val {
+    font-size: 1.5rem;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .exp-sub { font-size: 12px; color: var(--text-3); margin-top: 0.2rem; }
+
+  /* ── Tabs ── */
+  .tabs-bar { display: flex; gap: 4px; margin-bottom: 1.25rem; }
+  .tab {
+    font-size: 13px;
+    font-family: var(--sans);
+    padding: 6px 18px;
+    border-radius: 20px;
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-2);
+    transition: all 0.15s;
+  }
+  .tab:hover { background: var(--surface2); }
+  .tab.active { background: var(--text); color: #fff; border-color: var(--text); }
+
+  /* ── Controls bar ── */
+  .controls-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+    align-items: center;
+  }
+  .control-group { display: flex; align-items: center; gap: 8px; }
+  .ctrl-label {
+    font-size: 12px;
+    color: var(--text-3);
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+  }
+  .pill-group { display: flex; gap: 4px; flex-wrap: wrap; }
+  .pill {
+    font-size: 12px;
+    font-family: var(--sans);
+    padding: 4px 11px;
+    border-radius: 20px;
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-2);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .pill:hover { background: var(--surface2); }
+  .pill.active { background: var(--text); color: #fff; border-color: var(--text); }
+  select {
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  /* ── Map panel ── */
+  .map-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  #map-container svg { display: block; }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    align-items: center;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-2); }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+  /* ── Stat grid ── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+  .stat-card { background: var(--surface); padding: 1rem 1.25rem; }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 0.3rem;
+  }
+  .stat-val {
+    font-size: 1.6rem;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .stat-sub { font-size: 12px; color: var(--text-3); margin-top: 0.25rem; }
+
+  /* ── Table ── */
+  .table-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    text-align: right;
+    padding: 8px 10px;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-3);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    background: var(--surface2);
+  }
+  thead th:first-child { text-align: left; }
+  tbody td {
+    padding: 7px 10px;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+    font-variant-numeric: tabular-nums;
+  }
+  tbody td:first-child { text-align: left; font-weight: 500; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+
+  /* ── Formula box ── */
+  .formula-box {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+  }
+
+  /* ── Tooltip ── */
+  #tooltip {
+    position: fixed;
+    display: none;
+    background: rgba(20,20,17,0.94);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    pointer-events: none;
+    z-index: 100;
+    max-width: 250px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  }
+  .tt-title { font-weight: 500; font-size: 14px; margin-bottom: 6px; }
+  .tt-row { display: flex; justify-content: space-between; gap: 12px; padding: 2px 0; }
+  .tt-label { color: rgba(255,255,255,0.55); white-space: nowrap; }
+  .tt-val { font-family: var(--mono); font-size: 12px; }
+  .tt-green { color: #8fca6e; font-weight: 500; }
+  .tt-red { color: #e07858; font-weight: 500; }
+
+  /* ── Footer ── */
+  footer {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.5rem 3rem;
+    font-size: 12px;
+    color: var(--text-3);
+    line-height: 1.7;
+  }
+  footer a { color: var(--text-3); }
+
+  @media (max-width: 600px) {
+    .controls-bar { gap: 0.75rem; }
+    .header-desc { display: none; }
+    main { padding: 1.5rem 1rem 3rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="eyebrow">Fuel Cost Comparison · By State</div>
+    <h1>Is an <em>Electric Vehicle</em> Cheaper to Run<br>Than a Gas Car?</h1>
+    <p class="header-desc">Compare per-mile fuel costs for an EV vs. a gasoline car in every U.S. state. Select your current gas car's MPG and fuel grade, the EV efficiency you'd replace it with, and where you'd charge — then see where EVs save money and where they don't.</p>
+  </div>
+</header>
+
+<main>
+  <!-- Dynamic explainer cards -->
+  <div class="explainer" id="explainer-cards"></div>
+
+  <!-- Tab bar -->
+  <div class="tabs-bar">
+    <button class="tab active" onclick="setView('map', this)">Map</button>
+    <button class="tab" onclick="setView('table', this)">Data Table</button>
+  </div>
+
+  <!-- ═══ MAP VIEW ═══ -->
+  <div id="map-view">
+    <div class="controls-bar">
+      <div class="control-group">
+        <span class="ctrl-label">Gas car MPG</span>
+        <div class="pill-group" id="mpg-pills">
+          <button class="pill" onclick="setMpg(20, this)">20</button>
+          <button class="pill active" onclick="setMpg(25, this)">25</button>
+          <button class="pill" onclick="setMpg(30, this)">30</button>
+          <button class="pill" onclick="setMpg(35, this)">35</button>
+          <button class="pill" onclick="setMpg(40, this)">40</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="ctrl-label">Fuel grade</span>
+        <div class="pill-group" id="grade-pills">
+          <button class="pill active" onclick="setGrade('Regular', this)">Regular</button>
+          <button class="pill" onclick="setGrade('Mid-Grade', this)">Mid-Grade</button>
+          <button class="pill" onclick="setGrade('Premium', this)">Premium</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="ctrl-label">EV Efficiency</span>
+        <div class="pill-group" id="eff-pills">
+          <button class="pill" onclick="setEff(250, this)">250 Wh/mi</button>
+          <button class="pill active" onclick="setEff(275, this)">275 Wh/mi</button>
+          <button class="pill" onclick="setEff(300, this)">300 Wh/mi</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="ctrl-label">EV Charging</span>
+        <div class="pill-group" id="charge-pills">
+          <button class="pill active" onclick="setCharging('home', this)">At Home</button>
+          <button class="pill" onclick="setCharging('public', this)">Public Charger</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-panel">
+      <div id="map-container"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <div class="stat-grid" id="stat-cards"></div>
+  </div>
+
+  <!-- ═══ TABLE VIEW ═══ -->
+  <div id="table-view" style="display:none">
+    <div class="controls-bar">
+      <div class="control-group">
+        <span class="ctrl-label">Gas car MPG</span>
+        <div class="pill-group" id="mpg-pills-t">
+          <button class="pill" onclick="setMpgT(20, this)">20</button>
+          <button class="pill active" onclick="setMpgT(25, this)">25</button>
+          <button class="pill" onclick="setMpgT(30, this)">30</button>
+          <button class="pill" onclick="setMpgT(35, this)">35</button>
+          <button class="pill" onclick="setMpgT(40, this)">40</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="ctrl-label">Fuel grade</span>
+        <div class="pill-group" id="grade-pills-t">
+          <button class="pill active" onclick="setGradeT('Regular', this)">Regular</button>
+          <button class="pill" onclick="setGradeT('Mid-Grade', this)">Mid-Grade</button>
+          <button class="pill" onclick="setGradeT('Premium', this)">Premium</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="ctrl-label">EV Efficiency</span>
+        <div class="pill-group" id="eff-pills-t">
+          <button class="pill" onclick="setEffT(250, this)">250 Wh/mi</button>
+          <button class="pill active" onclick="setEffT(275, this)">275 Wh/mi</button>
+          <button class="pill" onclick="setEffT(300, this)">300 Wh/mi</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="ctrl-label">EV Charging</span>
+        <div class="pill-group" id="charge-pills-t">
+          <button class="pill active" onclick="setChargingT('home', this)">At Home</button>
+          <button class="pill" onclick="setChargingT('public', this)">Public Charger</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="ctrl-label">Sort by</span>
+        <select id="sort-sel" onchange="renderTable()">
+          <option value="savings">EV Savings</option>
+          <option value="evcost">EV Cost/100 mi</option>
+          <option value="gascost">Gas Cost/100 mi</option>
+          <option value="name">State Name</option>
+        </select>
+        <select id="order-sel" onchange="renderTable()">
+          <option value="desc">High → Low</option>
+          <option value="asc">Low → High</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-panel">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align:left">State</th>
+              <th>Elec. Price<br><span style="font-weight:400;text-transform:none;letter-spacing:0">$/kWh</span></th>
+              <th>Gas Price<br><span style="font-weight:400;text-transform:none;letter-spacing:0">$/gal</span></th>
+              <th>EV Cost<br><span style="font-weight:400;text-transform:none;letter-spacing:0">$/100 mi</span></th>
+              <th>Gas Cost<br><span style="font-weight:400;text-transform:none;letter-spacing:0">$/100 mi</span></th>
+              <th>EV Savings<br><span style="font-weight:400;text-transform:none;letter-spacing:0">$/100 mi</span></th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formula box -->
+  <div class="formula-box">
+    <strong>How to read this:</strong> Green states are where an EV costs less to fuel than the selected gas car; red states are where gasoline is cheaper. The metric is <em>savings per 100 miles</em> = (gas cost) − (EV fuel cost). <strong>At-home charging</strong> uses EIA average residential electricity rates by state for January 2026. <strong>Public charger</strong> uses AAA average Level 2 / DC fast-charging prices by state (March 2026). <strong>Gasoline prices</strong> are AAA state averages by grade (March 2026). <strong>Important:</strong> This compares fuel costs only — it excludes vehicle purchase price differences, maintenance, insurance, and other ownership costs.
+  </div>
+</main>
+
+<footer>
+  <strong>Sources:</strong>
+  At-home electricity — U.S. EIA Electric Power Monthly, Table 5.6.A, residential average retail price by state, January 2026. ·
+  Public EV charging — AAA EV Charging Prices by state (<a href="https://gasprices.aaa.com/ev-charging-prices/" target="_blank">gasprices.aaa.com</a>, March 2026). ·
+  Gasoline prices — AAA State Gas Price Averages by grade (<a href="https://gasprices.aaa.com/state-gas-price-averages/" target="_blank">gasprices.aaa.com</a>, March 2026).
+  <br><br>
+  Built with <a href="https://d3js.org" target="_blank">D3.js</a> and <a href="https://github.com/topojson/topojson" target="_blank">TopoJSON</a> using <a href="https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json" target="_blank">US Atlas</a> topology.
+</footer>
+
+<div id="tooltip"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════
+
+// EIA residential electricity prices (¢/kWh) — January 2026
+// Source: EIA Electric Power Monthly, Table 5.6.A
+const elecHomeData = {
+  "Alabama":16.06,"Alaska":25.52,"Arizona":15.61,"Arkansas":12.35,
+  "California":30.29,"Colorado":16.44,"Connecticut":28.30,"Delaware":16.51,
+  "District of Columbia":23.72,"Florida":15.92,"Georgia":14.46,"Hawaii":39.79,
+  "Idaho":12.07,"Illinois":16.36,"Indiana":16.19,"Iowa":12.83,
+  "Kansas":14.29,"Kentucky":12.31,"Louisiana":12.46,"Maine":30.73,
+  "Maryland":20.61,"Massachusetts":31.16,"Michigan":19.52,"Minnesota":14.98,
+  "Mississippi":11.74,"Missouri":11.80,"Montana":12.86,"Nebraska":11.76,
+  "Nevada":13.98,"New Hampshire":26.32,"New Jersey":23.13,"New Mexico":14.70,
+  "New York":28.37,"North Carolina":13.68,"North Dakota":10.92,"Ohio":17.59,
+  "Oklahoma":12.62,"Oregon":14.66,"Pennsylvania":20.19,"Rhode Island":30.14,
+  "South Carolina":15.41,"South Dakota":13.60,"Tennessee":12.30,"Texas":15.69,
+  "Utah":12.88,"Vermont":23.29,"Virginia":15.87,"Washington":13.81,
+  "West Virginia":14.77,"Wisconsin":18.20,"Wyoming":12.85
+};
+
+// AAA public EV charging prices ($/kWh) — March 2026
+const evPublicData = {
+  "Alabama":0.430,"Alaska":0.501,"Arizona":0.435,"Arkansas":0.449,
+  "California":0.468,"Colorado":0.378,"Connecticut":0.397,"Delaware":0.364,
+  "District of Columbia":0.392,"Florida":0.408,"Georgia":0.421,"Hawaii":0.515,
+  "Idaho":0.436,"Illinois":0.422,"Indiana":0.423,"Iowa":0.339,
+  "Kansas":0.293,"Kentucky":0.391,"Louisiana":0.476,"Maine":0.415,
+  "Maryland":0.339,"Massachusetts":0.392,"Michigan":0.393,"Minnesota":0.388,
+  "Mississippi":0.411,"Missouri":0.320,"Montana":0.423,"Nebraska":0.340,
+  "Nevada":0.442,"New Hampshire":0.477,"New Jersey":0.461,"New Mexico":0.373,
+  "New York":0.407,"North Carolina":0.406,"North Dakota":0.436,"Ohio":0.428,
+  "Oklahoma":0.424,"Oregon":0.403,"Pennsylvania":0.431,"Rhode Island":0.404,
+  "South Carolina":0.466,"South Dakota":0.351,"Tennessee":0.426,"Texas":0.409,
+  "Utah":0.331,"Vermont":0.346,"Virginia":0.420,"Washington":0.392,
+  "West Virginia":0.536,"Wisconsin":0.421,"Wyoming":0.420
+};
+
+// AAA gasoline prices by grade ($/gallon) — March 2026
+const gasData = {
+  "Alabama":     {"Regular":3.676,"Mid-Grade":4.098,"Premium":4.501,"Diesel":5.248},
+  "Alaska":      {"Regular":4.590,"Mid-Grade":4.865,"Premium":5.089,"Diesel":5.640},
+  "Arizona":     {"Regular":4.682,"Mid-Grade":5.071,"Premium":5.382,"Diesel":6.003},
+  "Arkansas":    {"Regular":3.444,"Mid-Grade":3.896,"Premium":4.250,"Diesel":4.884},
+  "California":  {"Regular":5.887,"Mid-Grade":6.118,"Premium":6.311,"Diesel":7.455},
+  "Colorado":    {"Regular":3.874,"Mid-Grade":4.266,"Premium":4.593,"Diesel":4.916},
+  "Connecticut": {"Regular":3.953,"Mid-Grade":4.480,"Premium":4.895,"Diesel":5.885},
+  "Delaware":    {"Regular":3.876,"Mid-Grade":4.463,"Premium":4.748,"Diesel":5.737},
+  "District of Columbia":{"Regular":4.191,"Mid-Grade":4.736,"Premium":5.117,"Diesel":5.693},
+  "Florida":     {"Regular":4.124,"Mid-Grade":4.578,"Premium":4.903,"Diesel":5.736},
+  "Georgia":     {"Regular":3.625,"Mid-Grade":4.092,"Premium":4.508,"Diesel":5.172},
+  "Hawaii":      {"Regular":5.452,"Mid-Grade":5.670,"Premium":5.905,"Diesel":6.691},
+  "Idaho":       {"Regular":4.267,"Mid-Grade":4.559,"Premium":4.814,"Diesel":5.510},
+  "Illinois":    {"Regular":4.203,"Mid-Grade":4.790,"Premium":5.263,"Diesel":5.147},
+  "Indiana":     {"Regular":3.975,"Mid-Grade":4.527,"Premium":5.022,"Diesel":5.189},
+  "Iowa":        {"Regular":3.282,"Mid-Grade":3.522,"Premium":4.138,"Diesel":4.859},
+  "Kansas":      {"Regular":3.288,"Mid-Grade":3.619,"Premium":3.939,"Diesel":4.559},
+  "Kentucky":    {"Regular":3.784,"Mid-Grade":4.319,"Premium":4.754,"Diesel":5.057},
+  "Louisiana":   {"Regular":3.630,"Mid-Grade":4.041,"Premium":4.431,"Diesel":5.119},
+  "Maine":       {"Regular":3.863,"Mid-Grade":4.420,"Premium":4.885,"Diesel":5.769},
+  "Maryland":    {"Regular":4.014,"Mid-Grade":4.574,"Premium":4.907,"Diesel":5.784},
+  "Massachusetts":{"Regular":3.818,"Mid-Grade":4.387,"Premium":4.787,"Diesel":5.731},
+  "Michigan":    {"Regular":3.915,"Mid-Grade":4.514,"Premium":5.073,"Diesel":5.010},
+  "Minnesota":   {"Regular":3.416,"Mid-Grade":3.849,"Premium":4.341,"Diesel":4.875},
+  "Mississippi": {"Regular":3.608,"Mid-Grade":4.035,"Premium":4.419,"Diesel":5.094},
+  "Missouri":    {"Regular":3.438,"Mid-Grade":3.871,"Premium":4.170,"Diesel":4.617},
+  "Montana":     {"Regular":3.711,"Mid-Grade":4.019,"Premium":4.369,"Diesel":4.794},
+  "Nebraska":    {"Regular":3.369,"Mid-Grade":3.552,"Premium":3.997,"Diesel":4.622},
+  "Nevada":      {"Regular":4.931,"Mid-Grade":5.239,"Premium":5.531,"Diesel":6.159},
+  "New Hampshire":{"Regular":3.801,"Mid-Grade":4.346,"Premium":4.804,"Diesel":5.678},
+  "New Jersey":  {"Regular":3.927,"Mid-Grade":4.458,"Premium":4.730,"Diesel":5.770},
+  "New Mexico":  {"Regular":3.850,"Mid-Grade":4.279,"Premium":4.591,"Diesel":5.256},
+  "New York":    {"Regular":3.949,"Mid-Grade":4.439,"Premium":4.828,"Diesel":5.774},
+  "North Carolina":{"Regular":3.839,"Mid-Grade":4.298,"Premium":4.689,"Diesel":5.585},
+  "North Dakota":{"Regular":3.433,"Mid-Grade":3.779,"Premium":4.194,"Diesel":4.592},
+  "Ohio":        {"Regular":3.794,"Mid-Grade":4.327,"Premium":4.837,"Diesel":5.039},
+  "Oklahoma":    {"Regular":3.272,"Mid-Grade":3.688,"Premium":3.979,"Diesel":4.491},
+  "Oregon":      {"Regular":4.933,"Mid-Grade":5.151,"Premium":5.434,"Diesel":6.076},
+  "Pennsylvania":{"Regular":3.976,"Mid-Grade":4.414,"Premium":4.791,"Diesel":5.918},
+  "Rhode Island":{"Regular":3.862,"Mid-Grade":4.513,"Premium":4.922,"Diesel":5.731},
+  "South Carolina":{"Regular":3.701,"Mid-Grade":4.146,"Premium":4.543,"Diesel":5.388},
+  "South Dakota":{"Regular":3.397,"Mid-Grade":3.587,"Premium":4.095,"Diesel":4.618},
+  "Tennessee":   {"Regular":3.724,"Mid-Grade":4.196,"Premium":4.593,"Diesel":5.312},
+  "Texas":       {"Regular":3.678,"Mid-Grade":4.149,"Premium":4.522,"Diesel":5.029},
+  "Utah":        {"Regular":4.199,"Mid-Grade":4.485,"Premium":4.728,"Diesel":5.486},
+  "Vermont":     {"Regular":3.931,"Mid-Grade":4.424,"Premium":4.883,"Diesel":5.744},
+  "Virginia":    {"Regular":3.932,"Mid-Grade":4.399,"Premium":4.775,"Diesel":5.617},
+  "Washington":  {"Regular":5.346,"Mid-Grade":5.585,"Premium":5.836,"Diesel":6.614},
+  "West Virginia":{"Regular":3.864,"Mid-Grade":4.311,"Premium":4.758,"Diesel":5.358},
+  "Wisconsin":   {"Regular":3.615,"Mid-Grade":4.136,"Premium":4.707,"Diesel":4.737},
+  "Wyoming":     {"Regular":3.846,"Mid-Grade":4.151,"Premium":4.436,"Diesel":4.984}
+};
+
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+let currentEff      = 275;        // Wh/mi
+let currentMpg      = 25;         // MPG
+let currentGrade    = 'Regular';  // fuel grade
+let currentCharging = 'home';     // 'home' | 'public'
+
+let currentEffT      = 275;
+let currentMpgT      = 25;
+let currentGradeT    = 'Regular';
+let currentChargingT = 'home';
+
+let pathsSel = null;
+
+// Color scale: savings per 100 miles (gas cost − EV cost)
+// Positive → EV cheaper (green), Negative → gas cheaper (red)
+const COLORS = {
+  ev_great:  '#27500A',
+  ev_good:   '#5a9932',
+  ev_slight: '#8BAF30',
+  gas_slight:'#BA7517',
+  gas_good:  '#993C1D',
+  gas_great: '#71321B',
+  no_data:   '#C8C5BC'
+};
+
+// ═══════════════════════════════════════════════
+//  CALCULATIONS
+// ═══════════════════════════════════════════════
+function getElecPrice(state, charging) {
+  if (charging === 'home') {
+    const c = elecHomeData[state];
+    return c != null ? c / 100 : null;   // ¢/kWh → $/kWh
+  }
+  return evPublicData[state] ?? null;    // already $/kWh
+}
+
+function calcState(state, eff, mpg, grade, charging) {
+  const elecPrice = getElecPrice(state, charging);
+  const gradeData = gasData[state];
+  if (elecPrice == null || !gradeData) return null;
+  const gasPrice = gradeData[grade];
+  if (gasPrice == null) return null;
+
+  const evCost100  = (eff / 1000) * 100 * elecPrice;  // $/100mi
+  const gasCost100 = (100 / mpg) * gasPrice;           // $/100mi
+  const savings    = gasCost100 - evCost100;            // + = EV cheaper
+
+  return { name: state, elecPrice, gasPrice, evCost100, gasCost100, savings };
+}
+
+// Live lookup keyed by state name
+const stateMap = {};
+
+function refreshStateMap() {
+  Object.keys(stateMap).forEach(k => delete stateMap[k]);
+  Object.keys(gasData).forEach(state => {
+    const d = calcState(state, currentEff, currentMpg, currentGrade, currentCharging);
+    if (d) stateMap[state] = d;
+  });
+}
+refreshStateMap();
+
+// ═══════════════════════════════════════════════
+//  COLOR LOGIC
+// ═══════════════════════════════════════════════
+function savingsToColor(savings) {
+  if (savings == null) return COLORS.no_data;
+  if (savings >  8)   return COLORS.ev_great;
+  if (savings >  3)   return COLORS.ev_good;
+  if (savings >  0)   return COLORS.ev_slight;
+  if (savings > -3)   return COLORS.gas_slight;
+  if (savings > -8)   return COLORS.gas_good;
+  return COLORS.gas_great;
+}
+
+function getFill(d) {
+  return d ? savingsToColor(d.savings) : COLORS.no_data;
+}
+
+// ═══════════════════════════════════════════════
+//  LEGEND
+// ═══════════════════════════════════════════════
+function renderLegend() {
+  document.getElementById('legend').innerHTML = `
+    <span style="font-size:11px;color:var(--text-3);margin-right:4px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;">EV savings vs gas ($/100 mi):</span>
+    <span class="legend-item"><span class="swatch" style="background:${COLORS.ev_great}"></span>EV saves &gt;$8</span>
+    <span class="legend-item"><span class="swatch" style="background:${COLORS.ev_good}"></span>EV saves $3–$8</span>
+    <span class="legend-item"><span class="swatch" style="background:${COLORS.ev_slight}"></span>EV saves $0–$3</span>
+    <span class="legend-item"><span class="swatch" style="background:${COLORS.gas_slight}"></span>Gas saves $0–$3</span>
+    <span class="legend-item"><span class="swatch" style="background:${COLORS.gas_good}"></span>Gas saves $3–$8</span>
+    <span class="legend-item"><span class="swatch" style="background:${COLORS.gas_great}"></span>Gas saves &gt;$8</span>
+    <span class="legend-item"><span class="swatch" style="background:${COLORS.no_data}"></span>No data</span>
+  `;
+}
+
+// ═══════════════════════════════════════════════
+//  EXPLAINER CARDS
+// ═══════════════════════════════════════════════
+function renderExplainerCards() {
+  const data = Object.values(stateMap);
+  if (!data.length) return;
+
+  const avgEv  = data.reduce((s, d) => s + d.evCost100,  0) / data.length;
+  const avgGas = data.reduce((s, d) => s + d.gasCost100, 0) / data.length;
+  const avgSav = avgGas - avgEv;
+  const sign   = avgSav >= 0 ? '+' : '';
+  const savCol = avgSav >= 0 ? '#5a9932' : '#993C1D';
+
+  const chargeSub = currentCharging === 'home'
+    ? `${currentEff} Wh/mi · residential electricity (EIA Jan 2026)`
+    : `${currentEff} Wh/mi · public charger (AAA Mar 2026)`;
+
+  document.getElementById('explainer-cards').innerHTML = `
+    <div class="exp-card">
+      <div class="exp-label">Avg EV fuel cost / 100 mi</div>
+      <div class="exp-val">$${avgEv.toFixed(2)}</div>
+      <div class="exp-sub">${chargeSub}</div>
+    </div>
+    <div class="exp-card">
+      <div class="exp-label">Avg gas car cost / 100 mi</div>
+      <div class="exp-val">$${avgGas.toFixed(2)}</div>
+      <div class="exp-sub">${currentMpg} MPG · ${currentGrade} unleaded (AAA Mar 2026)</div>
+    </div>
+    <div class="exp-card">
+      <div class="exp-label">Avg EV advantage / 100 mi</div>
+      <div class="exp-val" style="color:${savCol}">${sign}$${avgSav.toFixed(2)}</div>
+      <div class="exp-sub">national average across states with data</div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════
+//  STAT CARDS
+// ═══════════════════════════════════════════════
+function renderStatCards() {
+  const data = Object.values(stateMap);
+  if (!data.length) return;
+
+  const sorted    = [...data].sort((a, b) => b.savings - a.savings);
+  const avgSav    = data.reduce((s, d) => s + d.savings, 0) / data.length;
+  const evCheaper = data.filter(d => d.savings > 0).length;
+  const best      = sorted.slice(0, 3).map(d => d.name).join(', ');
+  const worst     = sorted.slice(-3).reverse().map(d => d.name).join(', ');
+  const sign      = avgSav >= 0 ? '+' : '';
+  const savCol    = avgSav >= 0 ? '#5a9932' : '#993C1D';
+
+  document.getElementById('stat-cards').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Avg EV savings</div>
+      <div class="stat-val" style="color:${savCol}">${sign}$${avgSav.toFixed(2)}</div>
+      <div class="stat-sub">per 100 miles vs gas · national avg</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">States where EV is cheaper</div>
+      <div class="stat-val">${evCheaper}</div>
+      <div class="stat-sub">out of ${data.length} states with data</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Best for EV</div>
+      <div class="stat-val" style="font-size:1rem;padding-top:3px">${best}</div>
+      <div class="stat-sub">Largest EV savings per 100 mi</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Closest / gas advantage</div>
+      <div class="stat-val" style="font-size:1rem;padding-top:3px">${worst}</div>
+      <div class="stat-sub">Smallest EV savings (or gas wins)</div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════
+//  MAP UPDATE
+// ═══════════════════════════════════════════════
+function updateMap() {
+  refreshStateMap();
+  if (pathsSel) {
+    pathsSel.attr('fill', d => getFill(stateMap[d.properties.name]));
+  }
+  renderStatCards();
+  renderExplainerCards();
+}
+
+// ═══════════════════════════════════════════════
+//  CONTROL HANDLERS — MAP
+// ═══════════════════════════════════════════════
+function setMpg(v, btn) {
+  currentMpg = v;
+  document.querySelectorAll('#mpg-pills .pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateMap();
+}
+function setGrade(v, btn) {
+  currentGrade = v;
+  document.querySelectorAll('#grade-pills .pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateMap();
+}
+function setEff(v, btn) {
+  currentEff = v;
+  document.querySelectorAll('#eff-pills .pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateMap();
+}
+function setCharging(v, btn) {
+  currentCharging = v;
+  document.querySelectorAll('#charge-pills .pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateMap();
+}
+
+// ═══════════════════════════════════════════════
+//  CONTROL HANDLERS — TABLE
+// ═══════════════════════════════════════════════
+function setMpgT(v, btn) {
+  currentMpgT = v;
+  document.querySelectorAll('#mpg-pills-t .pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+function setGradeT(v, btn) {
+  currentGradeT = v;
+  document.querySelectorAll('#grade-pills-t .pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+function setEffT(v, btn) {
+  currentEffT = v;
+  document.querySelectorAll('#eff-pills-t .pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+function setChargingT(v, btn) {
+  currentChargingT = v;
+  document.querySelectorAll('#charge-pills-t .pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+// ═══════════════════════════════════════════════
+//  TABLE RENDER
+// ═══════════════════════════════════════════════
+function renderTable() {
+  const rows = Object.keys(gasData).map(state => {
+    const d = calcState(state, currentEffT, currentMpgT, currentGradeT, currentChargingT);
+    return d || {
+      name: state,
+      elecPrice: getElecPrice(state, currentChargingT),
+      gasPrice: gasData[state]?.[currentGradeT] ?? null,
+      evCost100: null, gasCost100: null, savings: null
+    };
+  });
+
+  const sortField = document.getElementById('sort-sel').value;
+  const order     = document.getElementById('order-sel').value;
+
+  rows.sort((a, b) => {
+    const key = { savings: 'savings', evcost: 'evCost100', gascost: 'gasCost100', name: 'name' }[sortField];
+    let av = a[key], bv = b[key];
+    if (av === null || av === undefined) av = order === 'asc' ?  Infinity : -Infinity;
+    if (bv === null || bv === undefined) bv = order === 'asc' ?  Infinity : -Infinity;
+    if (key === 'name') return order === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+    return order === 'asc' ? av - bv : bv - av;
+  });
+
+  const f2  = v => v != null ? '$' + v.toFixed(2) : '—';
+  const f3  = v => v != null ? '$' + v.toFixed(3) : '—';
+
+  document.getElementById('table-body').innerHTML = rows.map(r => {
+    const c    = r.savings != null ? savingsToColor(r.savings) : '#aaa';
+    const sign = r.savings != null ? (r.savings >= 0 ? '+' : '') : '';
+    return `<tr>
+      <td>${r.name}</td>
+      <td>${f3(r.elecPrice)}</td>
+      <td>${f3(r.gasPrice)}</td>
+      <td>${f2(r.evCost100)}</td>
+      <td>${f2(r.gasCost100)}</td>
+      <td style="font-weight:500;color:${c}">${r.savings != null ? sign + f2(r.savings) : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  VIEW SWITCHING
+// ═══════════════════════════════════════════════
+function setView(v, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('map-view').style.display   = v === 'map'   ? '' : 'none';
+  document.getElementById('table-view').style.display = v === 'table' ? '' : 'none';
+  if (v === 'table') renderTable();
+}
+
+// ═══════════════════════════════════════════════
+//  MAP INIT (D3 + TopoJSON)
+// ═══════════════════════════════════════════════
+const tooltip = document.getElementById('tooltip');
+
+d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json').then(us => {
+  const container = document.getElementById('map-container');
+  const w = container.clientWidth || 800;
+  const h = Math.round(w * 0.60);
+
+  const svg = d3.select(container).append('svg')
+    .attr('viewBox', `0 0 ${w} ${h}`)
+    .attr('width', '100%');
+
+  const proj = d3.geoAlbersUsa()
+    .scale(w * 1.25)
+    .translate([w / 2, h / 2]);
+
+  const path = d3.geoPath(proj);
+
+  pathsSel = svg.append('g').selectAll('path')
+    .data(topojson.feature(us, us.objects.states).features)
+    .join('path')
+    .attr('d', path)
+    .attr('stroke', '#fff')
+    .attr('stroke-width', 0.6)
+    .attr('fill', d => getFill(stateMap[d.properties.name]))
+    .style('cursor', 'pointer')
+    .on('mousemove', function(event, d) {
+      const sd = stateMap[d.properties.name];
+      if (!sd) return;
+
+      const priceLabel = currentCharging === 'home' ? 'Home elec.' : 'Public charger';
+      const priceDisp  = currentCharging === 'home'
+        ? (sd.elecPrice * 100).toFixed(2) + '¢/kWh'
+        : '$' + sd.elecPrice.toFixed(3) + '/kWh';
+
+      const savAbs   = Math.abs(sd.savings);
+      const savSign  = sd.savings >= 0 ? '+' : '';
+      const savClass = sd.savings >= 0 ? 'tt-green' : 'tt-red';
+      const savLabel = sd.savings >= 0 ? 'EV saves' : 'Gas saves';
+
+      tooltip.style.display = 'block';
+      tooltip.style.left    = (event.clientX + 16) + 'px';
+      tooltip.style.top     = (event.clientY - 10) + 'px';
+      tooltip.innerHTML = `
+        <div class="tt-title">${sd.name}</div>
+        <div class="tt-row">
+          <span class="tt-label">${priceLabel}</span>
+          <span class="tt-val">${priceDisp}</span>
+        </div>
+        <div class="tt-row">
+          <span class="tt-label">Gas (${currentGrade})</span>
+          <span class="tt-val">$${sd.gasPrice.toFixed(3)}/gal</span>
+        </div>
+        <div class="tt-row">
+          <span class="tt-label">EV cost/100 mi</span>
+          <span class="tt-val">$${sd.evCost100.toFixed(2)}</span>
+        </div>
+        <div class="tt-row">
+          <span class="tt-label">Gas cost/100 mi</span>
+          <span class="tt-val">$${sd.gasCost100.toFixed(2)}</span>
+        </div>
+        <div class="tt-row" style="border-top:1px solid rgba(255,255,255,.15);margin-top:5px;padding-top:5px;">
+          <span class="tt-label">${savLabel}</span>
+          <span class="tt-val ${savClass}">${savSign}$${savAbs.toFixed(2)}/100 mi</span>
+        </div>
+      `;
+    })
+    .on('mouseleave', () => { tooltip.style.display = 'none'; });
+
+  renderLegend();
+  renderStatCards();
+  renderExplainerCards();
+});
+</script>
+</body>
+</html>
