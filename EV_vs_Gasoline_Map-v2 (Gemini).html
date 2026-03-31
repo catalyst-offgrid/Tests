@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EV vs. Gasoline: Fuel Cost Comparison by State</title>
+<script type="text/javascript" nonce="cd7cf2b7168840fc98d2c3a63f2" src="//local.adguard.org?ts=1774994203694&amp;type=content-script&amp;dmn=contribution.usercontent.google.com&amp;url=https%3A%2F%2Fcontribution.usercontent.google.com%2Fdownload%3Fc%3DCgxiYXJkX3N0b3JhZ2USTBIJdGVtcF9kYXRhGj8KMDBhM2RhYjEzZGVmNjhlMGEwMDA2NGU1OGVjMjg1YWY1MDU1OTMxMjk5ODExYWEzMxILEgcQyKOMmKMRGAE%26filename%3DEV_vs_Gasoline_Map-v2.html%26opi%3D103135050%26authuser%3D1&amp;app=chrome.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="cd7cf2b7168840fc98d2c3a63f2" src="//local.adguard.org?ts=1774994203694&amp;name=AdGuard%20Extra&amp;type=user-script"></script><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --surface2: #f0ede6;
+    --border: rgba(0,0,0,0.10);
+    --border-strong: rgba(0,0,0,0.18);
+    --text: #1a1a17;
+    --text-2: #5c5c54;
+    --text-3: #9c9c90;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--text);
+    color: #fff;
+    padding: 2.5rem 2rem 2rem;
+  }
+  .header-inner { max-width: 1100px; margin: 0 auto; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 0.6rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+    font-weight: 300;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin-bottom: 0.75rem;
+  }
+  header h1 em { font-style: normal; color: #8fca6e; }
+  .header-desc {
+    font-size: 14px;
+    color: rgba(255,255,255,0.55);
+    max-width: 640px;
+    line-height: 1.65;
+  }
+
+  /* ── Main layout ── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* ── Explainer cards ── */
+  .explainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+  .exp-card { background: var(--surface); padding: 1.1rem 1.25rem; }
+  .exp-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 0.3rem;
+  }
+  .exp-val {
+    font-size: 1.5rem;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .exp-sub { font-size: 12px; color: var(--text-3); margin-top: 0.2rem; }
+
+  /* ── Tabs ── */
+  .tabs-bar { display: flex; gap: 4px; margin-bottom: 1.25rem; }
+  .tab {
+    font-size: 13px;
+    font-family: var(--sans);
+    padding: 6px 18px;
+    border-radius: 20px;
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-2);
+    transition: all 0.15s;
+  }
+  .tab:hover { background: var(--surface2); }
+  .tab.active { background: var(--text); color: #fff; border-color: var(--text); }
+
+  /* ── Controls bar ── */
+  .controls-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+    align-items: center;
+  }
+  .control-group { display: flex; align-items: center; gap: 8px; }
+  .ctrl-label {
+    font-size: 12px;
+    color: var(--text-3);
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+  }
+  .pill-group { display: flex; gap: 4px; flex-wrap: wrap; }
+  .pill {
+    font-size: 12px;
+    font-family: var(--sans);
+    padding: 4px 11px;
+    border-radius: 20px;
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-2);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .pill:hover { background: var(--surface2); }
+  .pill.active { background: var(--text); color: #fff; border-color: var(--text); }
+  select {
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  /* ── Map panel ── */
+  .map-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  #map-container svg { display: block; }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    align-items: center;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-2); }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+  /* ── Stat grid ── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+  .stat-card { background: var(--surface); padding: 1rem 1.25rem; }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 0.3rem;
+  }
+  .stat-val {
+    font-size: 1.6rem;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .stat-sub { font-size: 12px; color: var(--text-3); margin-top: 0.25rem; }
+
+  /* ── Table ── */
+  .table-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    text-align: right;
+    padding: 8px 10px;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-3);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    background: var(--surface2);
+  }
+  thead th:first-child { text-align: left; }
+  tbody td {
+    padding: 7px 10px;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+    font-variant-numeric: tabular-nums;
+  }
+  tbody td:first-child { text-align: left; font-weight: 500; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+
+  /* ── Formula box ── */
+  .formula-box {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+  }
+
+  /* ── Tooltip ── */
+  #tooltip {
+    position: fixed;
+    display: none;
+    background: rgba(20,20,17,0.94);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    pointer-events: none;
+    z-index: 100;
+    max-width: 250px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  }
+  .tt-title { font-weight: 500; font-size: 14px; margin-bottom: 6px; }
+  .tt-row { display: flex; justify-content: space-between; gap: 12px; padding: 2px 0; }
+  .tt-label { color: rgba(255,255,255,0.55); white-space: nowrap; }
+  .tt-val { font-family: var(--mono); font-size: 12px; }
+  .tt-green { color: #8fca6e; font-weight: 500; }
+  .tt-red { color: #e07858; font-weight: 500; }
+
+  /* ── Footer ── */
+  footer {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.5rem 3rem;
+    font-size: 12px;
+    color: var(--text-3);
+    line-height: 1.7;
+  }
+  footer a { color: var(--text-3); }
+
+  @media (max-width: 600px) {
+    .controls-bar { gap: 0.75rem; }
+    .header-desc { display: none; }
+    main { padding: 1.5rem 1rem 3rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="eyebrow">Fuel Cost Comparison · By State</div>
+    <h1>Is an <em>Electric Vehicle</em> Cheaper to Run<br>Than a Gas Car?</h1>
+    <p class="header-desc">Compare per-mile fuel costs for an EV vs. a gasoline car in every U.S. state. Select your current gas car's MPG and fuel grade, the EV efficiency you'd replace it with, and where you'd charge — then see where EVs save money and where they don't.</p>
+  </div>
+</header>
+
+<main>
+  <!-- Dynamic explainer cards -->
+  <div class="explainer" id="explainer-cards"></div>
+
+  <!-- Tab bar -->
+  <div class="tabs-bar">
+    <button class="tab active" onclick="setView('map', this)">Map</button>
+    <button class="tab" onclick="setView('table', this)">Data Table</button>
+  </div>
+
+  <!-- ═══ MAP VIEW ═══ -->
+  <div id="map-view">
+    <div class="controls-bar">
+      <div class="control-group">
+        <span class="ctrl-label">Gas car MPG</span>
+        <div class="pill-group" id="mpg-pills">
+          <button class="pill" onclick="setMpg(20, this)">20</button>
+          <button class="pill active" onclick="setMpg(25, this)">25</button>
+          <button class="pill" onclick="setMpg(30, this)">30</button>
+          <button class="pill" onclick="setMpg(35, this)">35</button>
+          <button class="pill" onclick="setMpg(40, this)">40</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="ctrl-label">Fuel grade</span>
+        <div class="pill-group" id="grade-pills">
+          <button class="pill active" onclick="setGrade('Regular', this)">Regular</button>
+          <button class="pill" onclick="setGrade('Mid-Grade', this)">Mid-Grade</button>
+          <button class="pill" onclick="setGrade('Premium', this)">Premium</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="ctrl-label">EV Efficiency</span>
+        <select id="ev-select" onchange="setEff(this.value)" style="max-width: 250px; text-overflow: ellipsis;">
+          <!-- populated by js -->
+        </select>
+      </div>
+      <div class="control-group">
+        <span class="ctrl-label">EV Charging</span>
+        <div class="pill-group" id="charge-pills">
+          <button class="pill active" onclick="setCharging('home', this)">At Home</button>
+          <button class="pill" onclick="setCharging('public', this)">Public Charger</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-panel">
+      <div id="map-container"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <div class="stat-grid" id="stat-cards"></div>
+  </div>
+
+  <!-- ═══ TABLE VIEW ═══ -->
+  <div id="table-view" style="display:none">
+    <div class="controls-bar">
+      <div class="control-group">
+        <span class="ctrl-label">Gas car MPG</span>
+        <div class="pill-group" id="mpg-pills-t">
+          <button class="pill" onclick="setMpgT(20, this)">20</button>
+          <button class="pill active" onclick="setMpgT(25, this)">25</button>
+          <button class="pill" onclick="setMpgT(30, this)">30</button>
+          <button class="pill" onclick="setMpgT(35, this)">35</button>
+          <button class="pill" onclick="setMpgT(40, this)">40</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="ctrl-label">Fuel grade</span>
+        <div class="pill-group" id="grade-pills-t">
+          <button class="pill active" onclick="setGradeT('Regular', this)">Regular</button>
+          <button class="pill" onclick="setGradeT('Mid-Grade', this)">Mid-Grade</button>
+          <button class="pill" onclick="setGradeT('Premium', this)">Premium</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="ctrl-label">EV Efficiency</span>
+        <select id="ev-select-t" onchange="setEffT(this.value)" style="max-width: 250px; text-overflow: ellipsis;">
+          <!-- populated by js -->
+        </select>
+      </div>
+      <div class="control-group">
+        <span class="ctrl-label">EV Charging</span>
+        <div class="pill-group" id="charge-pills-t">
+          <button class="pill active" onclick="setChargingT('home', this)">At Home</button>
+          <button class="pill" onclick="setChargingT('public', this)">Public Charger</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="ctrl-label">Sort by</span>
+        <select id="sort-sel" onchange="renderTable()">
+          <option value="savings">EV Savings</option>
+          <option value="evcost">EV Cost/100 mi</option>
+          <option value="gascost">Gas Cost/100 mi</option>
+          <option value="name">State Name</option>
+        </select>
+        <select id="order-sel" onchange="renderTable()">
+          <option value="desc">High → Low</option>
+          <option value="asc">Low → High</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-panel">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align:left">State</th>
+              <th>Elec. Price<br><span style="font-weight:400;text-transform:none;letter-spacing:0">$/kWh</span></th>
+              <th>Gas Price<br><span style="font-weight:400;text-transform:none;letter-spacing:0">$/gal</span></th>
+              <th>EV Cost<br><span style="font-weight:400;text-transform:none;letter-spacing:0">$/100 mi</span></th>
+              <th>Gas Cost<br><span style="font-weight:400;text-transform:none;letter-spacing:0">$/100 mi</span></th>
+              <th>EV Savings<br><span style="font-weight:400;text-transform:none;letter-spacing:0">$/100 mi</span></th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formula box -->
+  <div class="formula-box">
+    <strong>How to read this:</strong> Green states are where an EV costs less to fuel than the selected gas car; red states are where gasoline is cheaper. The metric is <em>savings per 100 miles</em> = (gas cost) − (EV fuel cost). <strong>At-home charging</strong> uses EIA average residential electricity rates by state for January 2026. <strong>Public charger</strong> uses AAA average Level 2 / DC fast-charging prices by state (March 2026). <strong>Gasoline prices</strong> are AAA state averages by grade (March 2026). <strong>Important:</strong> This compares fuel costs only — it excludes vehicle purchase price differences, maintenance, insurance, and other ownership costs.
+  </div>
+</main>
+
+<footer>
+  <strong>Sources:</strong>
+  At-home electricity — U.S. EIA Electric Power Monthly, Table 5.6.A, residential average retail price by state, January 2026. ·
+  Public EV charging — AAA EV Charging Prices by state (<a href="https://gasprices.aaa.com/ev-charging-prices/" target="_blank">gasprices.aaa.com</a>, March 2026). ·
+  Gasoline prices — AAA State Gas Price Averages by grade (<a href="https://gasprices.aaa.com/state-gas-price-averages/" target="_blank">gasprices.aaa.com</a>, March 2026).
+  <br><br>
+  Built with <a href="https://d3js.org" target="_blank">D3.js</a> and <a href="https://github.com/topojson/topojson" target="_blank">TopoJSON</a> using <a href="https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json" target="_blank">US Atlas</a> topology.
+</footer>
+
+<div id="tooltip"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════
+
+// EIA residential electricity prices (¢/kWh) — January 2026
+// Source: EIA Electric Power Monthly, Table 5.6.A
+const elecHomeData = {
+  "Alabama":16.06,"Alaska":25.52,"Arizona":15.61,"Arkansas":12.35,
+  "California":30.29,"Colorado":16.44,"Connecticut":28.30,"Delaware":16.51,
+  "District of Columbia":23.72,"Florida":15.92,"Georgia":14.46,"Hawaii":39.79,
+  "Idaho":12.07,"Illinois":16.36,"Indiana":16.19,"Iowa":12.83,
+  "Kansas":14.29,"Kentucky":12.31,"Louisiana":12.46,"Maine":30.73,
+  "Maryland":20.61,"Massachusetts":31.16,"Michigan":19.52,"Minnesota":14.98,
+  "Mississippi":11.74,"Missouri":11.80,"Montana":12.86,"Nebraska":11.76,
+  "Nevada":13.98,"New Hampshire":26.32,"New Jersey":23.13,"New Mexico":14.70,
+  "New York":28.37,"North Carolina":13.68,"North Dakota":10.92,"Ohio":17.59,
+  "Oklahoma":12.62,"Oregon":14.66,"Pennsylvania":20.19,"Rhode Island":30.14,
+  "South Carolina":15.41,"South Dakota":13.60,"Tennessee":12.30,"Texas":15.69,
+  "Utah":12.88,"Vermont":23.29,"Virginia":15.87,"Washington":13.81,
+  "West Virginia":14.77,"Wisconsin":18.20,"Wyoming":12.85
+};
+
+// AAA public EV charging prices ($/kWh) — March 2026
+const evPublicData = {
+  "Alabama":0.430,"Alaska":0.501,"Arizona":0.435,"Arkansas":0.449,
+  "California":0.468,"Colorado":0.378,"Connecticut":0.397,"Delaware":0.364,
+  "District of Columbia":0.392,"Florida":0.408,"Georgia":0.421,"Hawaii":0.515,
+  "Idaho":0.436,"Illinois":0.422,"Indiana":0.423,"Iowa":0.339,
+  "Kansas":0.293,"Kentucky":0.391,"Louisiana":0.476,"Maine":0.415,
+  "Maryland":0.339,"Massachusetts":0.392,"Michigan":0.393,"Minnesota":0.388,
+  "Mississippi":0.411,"Missouri":0.320,"Montana":0.423,"Nebraska":0.340,
+  "Nevada":0.442,"New Hampshire":0.477,"New Jersey":0.461,"New Mexico":0.373,
+  "New York":0.407,"North Carolina":0.406,"North Dakota":0.436,"Ohio":0.428,
+  "Oklahoma":0.424,"Oregon":0.403,"Pennsylvania":0.431,"Rhode Island":0.404,
+  "South Carolina":0.466,"South Dakota":0.351,"Tennessee":0.426,"Texas":0.409,
+  "Utah":0.331,"Vermont":0.346,"Virginia":0.420,"Washington":0.392,
+  "West Virginia":0.536,"Wisconsin":0.421,"Wyoming":0.420
+};
+
+// AAA gasoline prices by grade ($/gallon) — March 2026
+const gasData = {
+  "Alabama":     {"Regular":3.676,"Mid-Grade":4.098,"Premium":4.501,"Diesel":5.248},
+  "Alaska":      {"Regular":4.590,"Mid-Grade":4.865,"Premium":5.089,"Diesel":5.640},
+  "Arizona":     {"Regular":4.682,"Mid-Grade":5.071,"Premium":5.382,"Diesel":6.003},
+  "Arkansas":    {"Regular":3.444,"Mid-Grade":3.896,"Premium":4.250,"Diesel":4.884},
+  "California":  {"Regular":5.887,"Mid-Grade":6.118,"Premium":6.311,"Diesel":7.455},
+  "Colorado":    {"Regular":3.874,"Mid-Grade":4.266,"Premium":4.593,"Diesel":4.916},
+  "Connecticut": {"Regular":3.953,"Mid-Grade":4.480,"Premium":4.895,"Diesel":5.885},
+  "Delaware":    {"Regular":3.876,"Mid-Grade":4.463,"Premium":4.748,"Diesel":5.737},
+  "District of Columbia":{"Regular":4.191,"Mid-Grade":4.736,"Premium":5.117,"Diesel":5.693},
+  "Florida":     {"Regular":4.124,"Mid-Grade":4.578,"Premium":4.903,"Diesel":5.736},
+  "Georgia":     {"Regular":3.625,"Mid-Grade":4.092,"Premium":4.508,"Diesel":5.172},
+  "Hawaii":      {"Regular":5.452,"Mid-Grade":5.670,"Premium":5.905,"Diesel":6.691},
+  "Idaho":       {"Regular":4.267,"Mid-Grade":4.559,"Premium":4.814,"Diesel":5.510},
+  "Illinois":    {"Regular":4.203,"Mid-Grade":4.790,"Premium":5.263,"Diesel":5.147},
+  "Indiana":     {"Regular":3.975,"Mid-Grade":4.527,"Premium":5.022,"Diesel":5.189},
+  "Iowa":        {"Regular":3.282,"Mid-Grade":3.522,"Premium":4.138,"Diesel":4.859},
+  "Kansas":      {"Regular":3.288,"Mid-Grade":3.619,"Premium":3.939,"Diesel":4.559},
+  "Kentucky":    {"Regular":3.784,"Mid-Grade":4.319,"Premium":4.754,"Diesel":5.057},
+  "Louisiana":   {"Regular":3.630,"Mid-Grade":4.041,"Premium":4.431,"Diesel":5.119},
+  "Maine":       {"Regular":3.863,"Mid-Grade":4.420,"Premium":4.885,"Diesel":5.769},
+  "Maryland":    {"Regular":4.014,"Mid-Grade":4.574,"Premium":4.907,"Diesel":5.784},
+  "Massachusetts":{"Regular":3.818,"Mid-Grade":4.387,"Premium":4.787,"Diesel":5.731},
+  "Michigan":    {"Regular":3.915,"Mid-Grade":4.514,"Premium":5.073,"Diesel":5.010},
+  "Minnesota":   {"Regular":3.416,"Mid-Grade":3.849,"Premium":4.341,"Diesel":4.875},
+  "Mississippi": {"Regular":3.608,"Mid-Grade":4.035,"Premium":4.419,"Diesel":5.094},
+  "Missouri":    {"Regular":3.438,"Mid-Grade":3.871,"Premium":4.170,"Diesel":4.617},
+  "Montana":     {"Regular":3.711,"Mid-Grade":4.019,"Premium":4.369,"Diesel":4.794},
+  "Nebraska":    {"Regular":3.369,"Mid-Grade":3.552,"Premium":3.997,"Diesel":4.622},
+  "Nevada":      {"Regular":4.931,"Mid-Grade":5.239,"Premium":5.531,"Diesel":6.159},
+  "New Hampshire":{"Regular":3.801,"Mid-Grade":4.346,"Premium":4.804,"Diesel":5.678},
+  "New Jersey":  {"Regular":3.927,"Mid-Grade":4.458,"Premium":4.730,"Diesel":5.770},
+  "New Mexico":  {"Regular":3.850,"Mid-Grade":4.279,"Premium":4.591,"Diesel":5.256},
+  "New York":    {"Regular":3.949,"Mid-Grade":4.439,"Premium":4.828,"Diesel":5.774},
+  "North Carolina":{"Regular":3.839,"Mid-Grade":4.298,"Premium":4.689,"Diesel":5.585},
+  "North Dakota":{"Regular":3.433,"Mid-Grade":3.779,"Premium":4.194,"Diesel":4.592},
+  "Ohio":        {"Regular":3.794,"Mid-Grade":4.327,"Premium":4.837,"Diesel":5.039},
+  "Oklahoma":    {"Regular":3.272,"Mid-Grade":3.688,"Premium":3.979,"Diesel":4.491},
+  "Oregon":      {"Regular":4.933,"Mid-Grade":5.151,"Premium":5.434,"Diesel":6.076},
+  "Pennsylvania":{"Regular":3.976,"Mid-Grade":4.414,"Premium":4.791,"Diesel":5.918},
+  "Rhode Island":{"Regular":3.862,"Mid-Grade":4.513,"Premium":4.922,"Diesel":5.731},
+  "South Carolina":{"Regular":3.701,"Mid-Grade":4.146,"Premium":4.543,"Diesel":5.388},
+  "South Dakota":{"Regular":3.397,"Mid-Grade":3.587,"Premium":4.095,"Diesel":4.618},
+  "Tennessee":   {"Regular":3.724,"Mid-Grade":4.196,"Premium":4.593,"Diesel":5.312},
+  "Texas":       {"Regular":3.678,"Mid-Grade":4.149,"Premium":4.522,"Diesel":5.029},
+  "Utah":        {"Regular":4.199,"Mid-Grade":4.485,"Premium":4.728,"Diesel":5.486},
+  "Vermont":     {"Regular":3.931,"Mid-Grade":4.424,"Premium":4.883,"Diesel":5.744},
+  "Virginia":    {"Regular":3.932,"Mid-Grade":4.399,"Premium":4.775,"Diesel":5.617},
+  "Washington":  {"Regular":5.346,"Mid-Grade":5.585,"Premium":5.836,"Diesel":6.614},
+  "West Virginia":{"Regular":3.864,"Mid-Grade":4.311,"Premium":4.758,"Diesel":5.358},
+  "Wisconsin":   {"Regular":3.615,"Mid-Grade":4.136,"Premium":4.707,"Diesel":4.737},
+  "Wyoming":     {"Regular":3.846,"Mid-Grade":4.151,"Premium":4.436,"Diesel":4.984}
+};
+
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+let currentEff      = 275;        // Wh/mi
+let currentMpg      = 25;         // MPG
+let currentGrade    = 'Regular';  // fuel grade
+let currentCharging = 'home';     // 'home' | 'public'
+
+let currentEffT      = 275;
+let currentMpgT      = 25;
+let currentGradeT    = 'Regular';
+let currentChargingT = 'home';
+
+let pathsSel = null;
+
+// Color scale: savings per 100 miles (gas cost − EV cost)
+// Positive → EV cheaper (green), Negative → gas cheaper (red)
+const COLORS = {
+  ev_great:  '#27500A',
+  ev_good:   '#5a9932',
+  ev_slight: '#8BAF30',
+  gas_slight:'#BA7517',
+  gas_good:  '#993C1D',
+  gas_great: '#71321B',
+  no_data:   '#C8C5BC'
+};
+
+// ═══════════════════════════════════════════════
+//  CALCULATIONS
+// ═══════════════════════════════════════════════
+function getElecPrice(state, charging) {
+  if (charging === 'home') {
+    const c = elecHomeData[state];
+    return c != null ? c / 100 : null;   // ¢/kWh → $/kWh
+  }
+  return evPublicData[state] ?? null;    // already $/kWh
+}
+
+function calcState(state, eff, mpg, grade, charging) {
+  const elecPrice = getElecPrice(state, charging);
+  const gradeData = gasData[state];
+  if (elecPrice == null || !gradeData) return null;
+  const gasPrice = gradeData[grade];
+  if (gasPrice == null) return null;
+
+  const evCost100  = (eff / 1000) * 100 * elecPrice;  // $/100mi
+  const gasCost100 = (100 / mpg) * gasPrice;           // $/100mi
+  const savings    = gasCost100 - evCost100;            // + = EV cheaper
+
+  return { name: state, elecPrice, gasPrice, evCost100, gasCost100, savings };
+}
+
+// Live lookup keyed by state name
+const stateMap = {};
+
+function refreshStateMap() {
+  Object.keys(stateMap).forEach(k => delete stateMap[k]);
+  Object.keys(gasData).forEach(state => {
+    const d = calcState(state, currentEff, currentMpg, currentGrade, currentCharging);
+    if (d) stateMap[state] = d;
+  });
+}
+refreshStateMap();
+
+// ═══════════════════════════════════════════════
+//  COLOR LOGIC
+// ═══════════════════════════════════════════════
+function savingsToColor(savings) {
+  if (savings == null) return COLORS.no_data;
+  if (savings >  8)   return COLORS.ev_great;
+  if (savings >  3)   return COLORS.ev_good;
+  if (savings >  0)   return COLORS.ev_slight;
+  if (savings > -3)   return COLORS.gas_slight;
+  if (savings > -8)   return COLORS.gas_good;
+  return COLORS.gas_great;
+}
+
+function getFill(d) {
+  return d ? savingsToColor(d.savings) : COLORS.no_data;
+}
+
+// ═══════════════════════════════════════════════
+//  LEGEND
+// ═══════════════════════════════════════════════
+function renderLegend() {
+  document.getElementById('legend').innerHTML = `
+    <span style="font-size:11px;color:var(--text-3);margin-right:4px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;">EV savings vs gas ($/100 mi):</span>
+    <span class="legend-item"><span class="swatch" style="background:${COLORS.ev_great}"></span>EV saves &gt;$8</span>
+    <span class="legend-item"><span class="swatch" style="background:${COLORS.ev_good}"></span>EV saves $3–$8</span>
+    <span class="legend-item"><span class="swatch" style="background:${COLORS.ev_slight}"></span>EV saves $0–$3</span>
+    <span class="legend-item"><span class="swatch" style="background:${COLORS.gas_slight}"></span>Gas saves $0–$3</span>
+    <span class="legend-item"><span class="swatch" style="background:${COLORS.gas_good}"></span>Gas saves $3–$8</span>
+    <span class="legend-item"><span class="swatch" style="background:${COLORS.gas_great}"></span>Gas saves &gt;$8</span>
+    <span class="legend-item"><span class="swatch" style="background:${COLORS.no_data}"></span>No data</span>
+  `;
+}
+
+// ═══════════════════════════════════════════════
+//  EXPLAINER CARDS
+// ═══════════════════════════════════════════════
+function renderExplainerCards() {
+  const data = Object.values(stateMap);
+  if (!data.length) return;
+
+  const avgEv  = data.reduce((s, d) => s + d.evCost100,  0) / data.length;
+  const avgGas = data.reduce((s, d) => s + d.gasCost100, 0) / data.length;
+  const avgSav = avgGas - avgEv;
+  const sign   = avgSav >= 0 ? '+' : '';
+  const savCol = avgSav >= 0 ? '#5a9932' : '#993C1D';
+
+  const chargeSub = currentCharging === 'home'
+    ? `${currentEff} Wh/mi · residential electricity (EIA Jan 2026)`
+    : `${currentEff} Wh/mi · public charger (AAA Mar 2026)`;
+
+  document.getElementById('explainer-cards').innerHTML = `
+    <div class="exp-card">
+      <div class="exp-label">Avg EV fuel cost / 100 mi</div>
+      <div class="exp-val">$${avgEv.toFixed(2)}</div>
+      <div class="exp-sub">${chargeSub}</div>
+    </div>
+    <div class="exp-card">
+      <div class="exp-label">Avg gas car cost / 100 mi</div>
+      <div class="exp-val">$${avgGas.toFixed(2)}</div>
+      <div class="exp-sub">${currentMpg} MPG · ${currentGrade} unleaded (AAA Mar 2026)</div>
+    </div>
+    <div class="exp-card">
+      <div class="exp-label">Avg EV advantage / 100 mi</div>
+      <div class="exp-val" style="color:${savCol}">${sign}$${avgSav.toFixed(2)}</div>
+      <div class="exp-sub">national average across states with data</div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════
+//  STAT CARDS
+// ═══════════════════════════════════════════════
+function renderStatCards() {
+  const data = Object.values(stateMap);
+  if (!data.length) return;
+
+  const sorted    = [...data].sort((a, b) => b.savings - a.savings);
+  const avgSav    = data.reduce((s, d) => s + d.savings, 0) / data.length;
+  const evCheaper = data.filter(d => d.savings > 0).length;
+  const best      = sorted.slice(0, 3).map(d => d.name).join(', ');
+  const worst     = sorted.slice(-3).reverse().map(d => d.name).join(', ');
+  const sign      = avgSav >= 0 ? '+' : '';
+  const savCol    = avgSav >= 0 ? '#5a9932' : '#993C1D';
+
+  document.getElementById('stat-cards').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Avg EV savings</div>
+      <div class="stat-val" style="color:${savCol}">${sign}$${avgSav.toFixed(2)}</div>
+      <div class="stat-sub">per 100 miles vs gas · national avg</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">States where EV is cheaper</div>
+      <div class="stat-val">${evCheaper}</div>
+      <div class="stat-sub">out of ${data.length} states with data</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Best for EV</div>
+      <div class="stat-val" style="font-size:1rem;padding-top:3px">${best}</div>
+      <div class="stat-sub">Largest EV savings per 100 mi</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Closest / gas advantage</div>
+      <div class="stat-val" style="font-size:1rem;padding-top:3px">${worst}</div>
+      <div class="stat-sub">Smallest EV savings (or gas wins)</div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════
+//  MAP UPDATE
+// ═══════════════════════════════════════════════
+function updateMap() {
+  refreshStateMap();
+  if (pathsSel) {
+    pathsSel.attr('fill', d => getFill(stateMap[d.properties.name]));
+  }
+  renderStatCards();
+  renderExplainerCards();
+}
+
+// ═══════════════════════════════════════════════
+//  CONTROL HANDLERS — MAP
+// ═══════════════════════════════════════════════
+function setMpg(v, btn) {
+  currentMpg = v;
+  document.querySelectorAll('#mpg-pills .pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateMap();
+}
+function setGrade(v, btn) {
+  currentGrade = v;
+  document.querySelectorAll('#grade-pills .pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateMap();
+}
+function setEff(v) {
+  currentEff = parseFloat(v);
+  updateMap();
+}
+function setCharging(v, btn) {
+  currentCharging = v;
+  document.querySelectorAll('#charge-pills .pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateMap();
+}
+
+// ═══════════════════════════════════════════════
+//  CONTROL HANDLERS — TABLE
+// ═══════════════════════════════════════════════
+function setMpgT(v, btn) {
+  currentMpgT = v;
+  document.querySelectorAll('#mpg-pills-t .pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+function setGradeT(v, btn) {
+  currentGradeT = v;
+  document.querySelectorAll('#grade-pills-t .pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+function setEffT(v) {
+  currentEffT = parseFloat(v);
+  renderTable();
+}
+function setChargingT(v, btn) {
+  currentChargingT = v;
+  document.querySelectorAll('#charge-pills-t .pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+// ═══════════════════════════════════════════════
+//  TABLE RENDER
+// ═══════════════════════════════════════════════
+function renderTable() {
+  const rows = Object.keys(gasData).map(state => {
+    const d = calcState(state, currentEffT, currentMpgT, currentGradeT, currentChargingT);
+    return d || {
+      name: state,
+      elecPrice: getElecPrice(state, currentChargingT),
+      gasPrice: gasData[state]?.[currentGradeT] ?? null,
+      evCost100: null, gasCost100: null, savings: null
+    };
+  });
+
+  const sortField = document.getElementById('sort-sel').value;
+  const order     = document.getElementById('order-sel').value;
+
+  rows.sort((a, b) => {
+    const key = { savings: 'savings', evcost: 'evCost100', gascost: 'gasCost100', name: 'name' }[sortField];
+    let av = a[key], bv = b[key];
+    if (av === null || av === undefined) av = order === 'asc' ?  Infinity : -Infinity;
+    if (bv === null || bv === undefined) bv = order === 'asc' ?  Infinity : -Infinity;
+    if (key === 'name') return order === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+    return order === 'asc' ? av - bv : bv - av;
+  });
+
+  const f2  = v => v != null ? '$' + v.toFixed(2) : '—';
+  const f3  = v => v != null ? '$' + v.toFixed(3) : '—';
+
+  document.getElementById('table-body').innerHTML = rows.map(r => {
+    const c    = r.savings != null ? savingsToColor(r.savings) : '#aaa';
+    const sign = r.savings != null ? (r.savings >= 0 ? '+' : '') : '';
+    return `<tr>
+      <td>${r.name}</td>
+      <td>${f3(r.elecPrice)}</td>
+      <td>${f3(r.gasPrice)}</td>
+      <td>${f2(r.evCost100)}</td>
+      <td>${f2(r.gasCost100)}</td>
+      <td style="font-weight:500;color:${c}">${r.savings != null ? sign + f2(r.savings) : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  VIEW SWITCHING
+// ═══════════════════════════════════════════════
+function setView(v, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('map-view').style.display   = v === 'map'   ? '' : 'none';
+  document.getElementById('table-view').style.display = v === 'table' ? '' : 'none';
+  if (v === 'table') renderTable();
+}
+
+// ═══════════════════════════════════════════════
+//  MAP INIT (D3 + TopoJSON)
+// ═══════════════════════════════════════════════
+const tooltip = document.getElementById('tooltip');
+
+d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json').then(us => {
+  
+  // --- INJECTED EV DATABASE ---
+  const evDatabase = [{"label": "2022 Audi Q4 e-tron Sportback quattro", "eff": 360}, {"label": "2022 Audi Q4 e-tron quattro", "eff": 360}, {"label": "2022 Audi RS e-tron GT", "eff": 420}, {"label": "2022 Audi e-tron GT", "eff": 410}, {"label": "2022 Audi e-tron S", "eff": 495}, {"label": "2022 Audi e-tron S Sportback", "eff": 485}, {"label": "2022 Audi e-tron Sportback quattro", "eff": 440}, {"label": "2022 Audi e-tron quattro", "eff": 430}, {"label": "2022 BMW i4 M50 Gran Coupe", "eff": 385}, {"label": "2022 BMW i4 eDrive40 Gran Coupe", "eff": 325}, {"label": "2022 BMW iX xDrive50", "eff": 396}, {"label": "2022 Chevrolet Bolt EUV", "eff": 290}, {"label": "2022 Chevrolet Bolt EV", "eff": 280}, {"label": "2022 Ford F-150 Lightning 4WD", "eff": 490}, {"label": "2022 Ford F-150 Lightning 4WD Extended Range", "eff": 480}, {"label": "2022 Ford F-150 Lightning Platinum 4WD", "eff": 510}, {"label": "2022 Ford Mustang Mach-E AWD", "eff": 360}, {"label": "2022 Ford Mustang Mach-E AWD Extended", "eff": 370}, {"label": "2022 Ford Mustang Mach-E CAL RT 1 ER AWD", "eff": 340}, {"label": "2022 Ford Mustang Mach-E CAL RT 1 ER RWD", "eff": 330}, {"label": "2022 Ford Mustang Mach-E GT", "eff": 400}, {"label": "2022 Ford Mustang Mach-E GT Performance", "eff": 410}, {"label": "2022 Ford Mustang Mach-E RWD", "eff": 330}, {"label": "2022 Ford Mustang Mach-E RWD Extended", "eff": 350}, {"label": "2022 Hyundai Ioniq 5 AWD", "eff": 340}, {"label": "2022 Hyundai Ioniq 5 RWD", "eff": 305}, {"label": "2022 Hyundai Kona Electric", "eff": 280}, {"label": "2022 Kia EV6 AWD", "eff": 320}, {"label": "2022 Kia EV6 RWD", "eff": 290}, {"label": "2022 Kia Niro Electric", "eff": 300}, {"label": "2022 Lucid Air Dream P AWD w/19 inch wheels", "eff": 290}, {"label": "2022 Lucid Air Dream P AWD w/21 inch wheels", "eff": 300}, {"label": "2022 Lucid Air Dream R AWD w/19 inch wheels", "eff": 270}, {"label": "2022 Lucid Air Dream R AWD w/21 inch wheels", "eff": 290}, {"label": "2022 Lucid Air G Touring AWD w/19 inch wheels", "eff": 260}, {"label": "2022 Lucid Air G Touring AWD w/21 inch wheels", "eff": 280}, {"label": "2022 MINI Cooper SE Hardtop 2 door", "eff": 310}, {"label": "2022 Mazda MX-30", "eff": 370}, {"label": "2022 Mercedes-Benz AMG EQS 4matic Plus", "eff": 440}, {"label": "2022 Mercedes-Benz EQB 300 4matic", "eff": 330}, {"label": "2022 Mercedes-Benz EQB 350 4matic", "eff": 350}, {"label": "2022 Mercedes-Benz EQS 450 Plus", "eff": 350}, {"label": "2022 Mercedes-Benz EQS 580 4matic", "eff": 360}, {"label": "2022 Nissan Leaf", "eff": 305}, {"label": "2022 Nissan Leaf SV/SL", "eff": 320}, {"label": "2022 Polestar 2 Dual Motor", "eff": 380}, {"label": "2022 Polestar 2 Single Motor", "eff": 310}, {"label": "2022 Porsche Taycan 4 Cross Turismo", "eff": 440}, {"label": "2022 Porsche Taycan 4S Cross Turismo", "eff": 450}, {"label": "2022 Porsche Taycan 4S Perf Battery", "eff": 420}, {"label": "2022 Porsche Taycan 4S Perf Battery Plus", "eff": 430}, {"label": "2022 Porsche Taycan GTS", "eff": 410}, {"label": "2022 Porsche Taycan GTS ST", "eff": 420}, {"label": "2022 Porsche Taycan Perf Battery", "eff": 420}, {"label": "2022 Porsche Taycan Perf Battery Plus", "eff": 450}, {"label": "2022 Porsche Taycan Turbo", "eff": 460}, {"label": "2022 Porsche Taycan Turbo Cross Turismo", "eff": 470}, {"label": "2022 Porsche Taycan Turbo S", "eff": 480}, {"label": "2022 Porsche Taycan Turbo S Cross Turismo", "eff": 460}, {"label": "2022 Rivian R1S", "eff": 490}, {"label": "2022 Rivian R1T", "eff": 480}, {"label": "2022 Tesla Model 3 Long Range AWD", "eff": 260}, {"label": "2022 Tesla Model 3 Performance AWD", "eff": 300}, {"label": "2022 Tesla Model 3 RWD", "eff": 250}, {"label": "2022 Tesla Model S", "eff": 280}, {"label": "2022 Tesla Model S Plaid", "eff": 310}, {"label": "2022 Tesla Model X", "eff": 330}, {"label": "2022 Tesla Model X Plaid", "eff": 355}, {"label": "2022 Tesla Model Y AWD", "eff": 280}, {"label": "2022 Tesla Model Y Long Range AWD", "eff": 280}, {"label": "2022 Tesla Model Y Performance AWD", "eff": 300}, {"label": "2022 Tesla Model Y RWD", "eff": 260}, {"label": "2022 Volkswagen ID.4 AWD Pro", "eff": 330}, {"label": "2022 Volkswagen ID.4 AWD Pro S", "eff": 350}, {"label": "2022 Volkswagen ID.4 Pro", "eff": 320}, {"label": "2022 Volkswagen ID.4 Pro S", "eff": 330}, {"label": "2022 Volvo C40 Recharge twin", "eff": 390}, {"label": "2022 Volvo XC40 Recharge twin", "eff": 390}, {"label": "2023 Audi Q4 e-tron", "eff": 330}, {"label": "2023 Audi Q4 e-tron Sportback", "eff": 360}, {"label": "2023 Audi Q4 e-tron quattro", "eff": 360}, {"label": "2023 Audi RS e-tron GT", "eff": 420}, {"label": "2023 Audi e-tron GT", "eff": 410}, {"label": "2023 Audi e-tron S", "eff": 495}, {"label": "2023 Audi e-tron S Sportback", "eff": 485}, {"label": "2023 Audi e-tron Sportback quattro", "eff": 430}, {"label": "2023 Audi e-tron quattro", "eff": 430}, {"label": "2023 BMW i4 M50 Gran Coupe", "eff": 385}, {"label": "2023 BMW i4 eDrive35 Gran Coupe", "eff": 310}, {"label": "2023 BMW i4 eDrive40 Gran Coupe", "eff": 340}, {"label": "2023 BMW i7 xDrive60 Sedan", "eff": 393}, {"label": "2023 BMW iX M60", "eff": 435}, {"label": "2023 BMW iX xDrive50", "eff": 396}, {"label": "2023 Cadillac LYRIQ", "eff": 380}, {"label": "2023 Cadillac LYRIQ AWD", "eff": 380}, {"label": "2023 Chevrolet Bolt EUV", "eff": 290}, {"label": "2023 Chevrolet Bolt EV", "eff": 280}, {"label": "2023 Fisker Ocean Extreme One", "eff": 370}, {"label": "2023 Ford F-150 Lightning 4WD", "eff": 490}, {"label": "2023 Ford F-150 Lightning 4WD Extended Range", "eff": 480}, {"label": "2023 Ford F-150 Lightning Platinum 4WD", "eff": 510}, {"label": "2023 Ford MUSTANG MACH-E CAL RT 1 ER AWD", "eff": 340}, {"label": "2023 Ford Mustang Mach-E AWD", "eff": 360}, {"label": "2023 Ford Mustang Mach-E AWD Extended", "eff": 370}, {"label": "2023 Ford Mustang Mach-E GT", "eff": 400}, {"label": "2023 Ford Mustang Mach-E GT Performance", "eff": 410}, {"label": "2023 Ford Mustang Mach-E RWD", "eff": 330}, {"label": "2023 Ford Mustang Mach-E RWD Extended", "eff": 340}, {"label": "2023 Ford Mustang Mach-E RWD LFP", "eff": 330}, {"label": "2023 Genesis Electrified G80", "eff": 340}, {"label": "2023 Genesis GV60 ADVANCE", "eff": 350}, {"label": "2023 Genesis GV60 PERFORMANCE", "eff": 370}, {"label": "2023 Hyundai Ioniq 6 Long range AWD", "eff": 305}, {"label": "2023 Hyundai Ioniq 6 Long range RWD", "eff": 265}, {"label": "2023 Hyundai Ioniq 6 Standard Range RWD", "eff": 250}, {"label": "2023 Hyundai Kona Electric", "eff": 270}, {"label": "2023 Jaguar I-Pace EV400", "eff": 420}, {"label": "2023 Kia EV6 AWD GT", "eff": 420}, {"label": "2023 Kia EV6 Long Range AWD", "eff": 325}, {"label": "2023 Kia EV6 Long Range RWD", "eff": 280}, {"label": "2023 Kia EV6 Standard Range RWD", "eff": 280}, {"label": "2023 Kia Niro Electric", "eff": 290}, {"label": "2023 Lexus RZ 450e AWD", "eff": 340}, {"label": "2023 Lordstown Endurance", "eff": 700}, {"label": "2023 Lucid Air G Touring XR AWD with 19 inch wheels", "eff": 260}, {"label": "2023 Lucid Air G Touring XR AWD with 20 inch wheels", "eff": 280}, {"label": "2023 Lucid Air G Touring XR AWD with 21 inch wheels", "eff": 280}, {"label": "2023 Lucid Air GT P AWD with 21 inch wheels", "eff": 300}, {"label": "2023 Lucid Air Pure AWD with 19 inch wheels", "eff": 240}, {"label": "2023 Lucid Air Pure AWD with 20 inch wheels", "eff": 280}, {"label": "2023 Lucid Air Touring AWD with 19 inch wheels", "eff": 240}, {"label": "2023 Lucid Air Touring AWD with 20 inch wheels", "eff": 280}, {"label": "2023 Lucid Air Touring AWD with 21 inch wheels", "eff": 280}, {"label": "2023 MINI Cooper SE Hardtop 2 door", "eff": 310}, {"label": "2023 Mazda MX-30", "eff": 370}, {"label": "2023 Mercedes-Benz EQS 450 4matic", "eff": 370}, {"label": "2023 Mercedes-Benz EQS 450 Plus", "eff": 390}, {"label": "2023 Mercedes-Benz EQS 580 4matic", "eff": 420}, {"label": "2023 Nissan ARIYA ENG Plus/EVO Plus e-4ORCE 87kWh", "eff": 370}, {"label": "2023 Nissan ARIYA ENGAGE FWD 63kWh", "eff": 330}, {"label": "2023 Nissan ARIYA ENGAGE e-4ORCE 63kWh", "eff": 350}, {"label": "2023 Nissan ARIYA EVO Plus/EMP Plus/PRM FWD 87kWh", "eff": 340}, {"label": "2023 Nissan ARIYA PLAT Plus e-4ORCE 87kWh 19", "eff": 370}, {"label": "2023 Nissan ARIYA PLAT Plus e-4ORCE 87kWh 20", "eff": 390}, {"label": "2023 Nissan ARIYA VENTURE Plus FWD 87kWh", "eff": 330}, {"label": "2023 Nissan LEAF", "eff": 300}, {"label": "2023 Nissan LEAF SV", "eff": 310}, {"label": "2023 Polestar 2 BST edition", "eff": 360}, {"label": "2023 Polestar 2 Dual Motor", "eff": 340}, {"label": "2023 Polestar 2 Dual Motor Perf Pack", "eff": 340}, {"label": "2023 Polestar 2 Single Motor", "eff": 310}, {"label": "2023 Porsche Taycan 4 Cross Turismo", "eff": 420}, {"label": "2023 Porsche Taycan 4S Cross Turismo", "eff": 430}, {"label": "2023 Porsche Taycan 4S Perf Battery Plus", "eff": 420}, {"label": "2023 Porsche Taycan 4S Performance Battery", "eff": 400}, {"label": "2023 Porsche Taycan GTS", "eff": 410}, {"label": "2023 Porsche Taycan GTS Sport Turismo", "eff": 420}, {"label": "2023 Porsche Taycan Perf Battery Plus", "eff": 410}, {"label": "2023 Porsche Taycan Performance Battery", "eff": 410}, {"label": "2023 Porsche Taycan Turbo", "eff": 420}, {"label": "2023 Porsche Taycan Turbo Cross Turismo", "eff": 420}, {"label": "2023 Porsche Taycan Turbo S", "eff": 450}, {"label": "2023 Porsche Taycan Turbo S Cross Turismo", "eff": 450}, {"label": "2023 Rivian R1S", "eff": 493}, {"label": "2023 Rivian R1S 20 inch All-Terrain", "eff": 540}, {"label": "2023 Rivian R1S 20 inch All-Terrain Dual Large", "eff": 490}, {"label": "2023 Rivian R1S 20 inch All-Terrain Performance Dual Large", "eff": 490}, {"label": "2023 Rivian R1S 21 inch Dual Large", "eff": 430}, {"label": "2023 Rivian R1S 21 inch Performance Dual Large", "eff": 430}, {"label": "2023 Rivian R1S 22 inch Dual Large", "eff": 450}, {"label": "2023 Rivian R1S 22 inch Performance Dual Large", "eff": 450}, {"label": "2023 Rivian R1T", "eff": 490}, {"label": "2023 Rivian R1T 21 inch Dual Large", "eff": 430}, {"label": "2023 Rivian R1T 21 inch Performance Dual Large", "eff": 430}, {"label": "2023 Rivian R1T 22 inch Dual Large", "eff": 440}, {"label": "2023 Rivian R1T 22 inch Performance Dual Large", "eff": 440}, {"label": "2023 Subaru Solterra AWD", "eff": 310}, {"label": "2023 Subaru Solterra Limited/Touring AWD", "eff": 320}, {"label": "2023 Tesla Model 3 Long Range AWD", "eff": 260}, {"label": "2023 Tesla Model 3 Performance AWD", "eff": 300}, {"label": "2023 Tesla Model 3 RWD", "eff": 250}, {"label": "2023 Tesla Model S", "eff": 280}, {"label": "2023 Tesla Model X", "eff": 330}, {"label": "2023 Tesla Model X Plaid", "eff": 355}, {"label": "2023 Tesla Model Y AWD", "eff": 280}, {"label": "2023 Tesla Model Y Long Range AWD", "eff": 280}, {"label": "2023 Tesla Model Y Performance AWD", "eff": 300}, {"label": "2023 Toyota bZ4X", "eff": 280}, {"label": "2023 Toyota bZ4X AWD", "eff": 320}, {"label": "2023 Toyota bZ4X LIMITED", "eff": 300}, {"label": "2023 Toyota bZ4X LIMITED AWD", "eff": 330}, {"label": "2023 Vinfast VF 8 Eco", "eff": 390}, {"label": "2023 Vinfast VF 8 Plus", "eff": 420}, {"label": "2023 Volkswagen ID.4", "eff": 310}, {"label": "2023 Volkswagen ID.4 AWD Pro", "eff": 340}, {"label": "2023 Volkswagen ID.4 AWD Pro S", "eff": 340}, {"label": "2023 Volkswagen ID.4 Pro", "eff": 320}, {"label": "2023 Volkswagen ID.4 Pro S", "eff": 320}, {"label": "2023 Volkswagen ID.4 S", "eff": 310}, {"label": "2023 Volvo C40 Recharge twin", "eff": 390}, {"label": "2023 Volvo XC40 Recharge twin", "eff": 390}, {"label": "2024 Acura ZDX AWD", "eff": 390}, {"label": "2024 Acura ZDX AWD Type S", "eff": 430}, {"label": "2024 Acura ZDX RWD", "eff": 370}, {"label": "2024 Audi Q4 40 e-tron", "eff": 330}, {"label": "2024 Audi Q4 50 e-tron quattro", "eff": 360}, {"label": "2024 Audi Q4 55 e-tron quattro", "eff": 340}, {"label": "2024 Audi Q4 Sportback 50 e-tron quattro", "eff": 360}, {"label": "2024 Audi Q4 Sportback 55 e-tron quattro", "eff": 340}, {"label": "2024 Audi Q8 Sportback e-tron quattro", "eff": 390}, {"label": "2024 Audi Q8 Sportback e-tron ultra quattro", "eff": 390}, {"label": "2024 Audi Q8 e-tron quattro", "eff": 410}, {"label": "2024 Audi RS e-tron GT", "eff": 400}, {"label": "2024 Audi SQ8 Sportback e-tron", "eff": 500}, {"label": "2024 Audi SQ8 e-tron", "eff": 500}, {"label": "2024 Audi e-tron GT", "eff": 400}, {"label": "2024 BMW i4 M50 Gran Coupe", "eff": 385}, {"label": "2024 BMW i4 eDrive35 Gran Coupe", "eff": 295}, {"label": "2024 BMW i4 eDrive40 Gran Coupe", "eff": 325}, {"label": "2024 BMW i4 xDrive40 Gran Coupe", "eff": 325}, {"label": "2024 BMW i5 M60 xDrive Sedan", "eff": 383}, {"label": "2024 BMW i5 eDrive40 Sedan", "eff": 336}, {"label": "2024 BMW i7 M70 xDrive Sedan", "eff": 430}, {"label": "2024 BMW i7 eDrive50 Sedan", "eff": 380}, {"label": "2024 BMW i7 xDrive60 Sedan", "eff": 386}, {"label": "2024 BMW iX M60", "eff": 420}, {"label": "2024 BMW iX xDrive40", "eff": 390}, {"label": "2024 BMW iX xDrive50", "eff": 410}, {"label": "2024 Bugatti Rimac Nevera", "eff": 630}, {"label": "2024 Cadillac LYRIQ", "eff": 380}, {"label": "2024 Cadillac LYRIQ AWD", "eff": 380}, {"label": "2024 Chevrolet Blazer EV AWD", "eff": 350}, {"label": "2024 Chevrolet Blazer EV RWD", "eff": 370}, {"label": "2024 Chevrolet Equinox EV AWD", "eff": 350}, {"label": "2024 Chevrolet Equinox EV FWD", "eff": 310}, {"label": "2024 Chevrolet Silverado EV", "eff": 520}, {"label": "2024 Dodge Charger 2-Dr Daytona R/T AWD 18in", "eff": 390}, {"label": "2024 Dodge Charger 2-Dr Daytona R/T AWD 20in Goodyear", "eff": 400}, {"label": "2024 Dodge Charger 2-Dr Daytona R/T AWD 20in Nexen", "eff": 350}, {"label": "2024 Dodge Charger 2-Dr Daytona Scat Pack Track Pack AWD", "eff": 480}, {"label": "2024 Dodge Charger 2-Dr Daytona Scat Pack Track Pack AWD A/S", "eff": 430}, {"label": "2024 Fiat 500e", "eff": 290}, {"label": "2024 Fiat 500e All Season", "eff": 310}, {"label": "2024 Fisker Ocean Sport 20in", "eff": 370}, {"label": "2024 Fisker Ocean Sport 22in", "eff": 430}, {"label": "2024 Ford F-150 Lightning 4WD", "eff": 490}, {"label": "2024 Ford F-150 Lightning 4WD Extended Range", "eff": 480}, {"label": "2024 Ford F-150 Lightning PRO 4WD Extended Range", "eff": 480}, {"label": "2024 Ford F-150 Lightning Platinum 4WD", "eff": 510}, {"label": "2024 Ford Mustang Mach-E AWD", "eff": 370}, {"label": "2024 Ford Mustang Mach-E AWD Extended", "eff": 340}, {"label": "2024 Ford Mustang Mach-E GT", "eff": 370}, {"label": "2024 Ford Mustang Mach-E RWD", "eff": 330}, {"label": "2024 Ford Mustang Mach-E RWD Extended", "eff": 320}, {"label": "2024 Ford Mustang Mach-E Rally", "eff": 390}, {"label": "2024 GMC Hummer EV Pickup", "eff": 630}, {"label": "2024 GMC Hummer EV Pickup 2M20", "eff": 650}, {"label": "2024 GMC Hummer EV Pickup MT Tires", "eff": 630}, {"label": "2024 GMC Hummer EV Pickup MT Tires 2M20", "eff": 720}, {"label": "2024 GMC Hummer EV SUV", "eff": 630}, {"label": "2024 GMC Hummer EV SUV 2M20", "eff": 660}, {"label": "2024 GMC Hummer EV SUV MT Tires", "eff": 630}, {"label": "2024 GMC Hummer EV SUV MT Tires 2M20", "eff": 720}, {"label": "2024 Genesis Electrified G80", "eff": 350}, {"label": "2024 Genesis Electrified GV70", "eff": 370}, {"label": "2024 Genesis GV60 Advanced", "eff": 345}, {"label": "2024 Genesis GV60 PERFORMANCE", "eff": 370}, {"label": "2024 Genesis GV60 Standard", "eff": 300}, {"label": "2024 Honda Prologue AWD Elite", "eff": 370}, {"label": "2024 Honda Prologue AWD Touring", "eff": 360}, {"label": "2024 Honda Prologue FWD", "eff": 340}, {"label": "2024 Hyundai Ioniq 5 Long range AWD", "eff": 340}, {"label": "2024 Hyundai Ioniq 5 Long range RWD", "eff": 300}, {"label": "2024 Hyundai Ioniq 5 Standard range RWD", "eff": 310}, {"label": "2024 Hyundai Ioniq 6 Long range AWD", "eff": 300}, {"label": "2024 Hyundai Ioniq 6 Long range RWD", "eff": 265}, {"label": "2024 Hyundai Ioniq 6 Standard Range RWD", "eff": 250}, {"label": "2024 Hyundai Kona Electric Long Range", "eff": 290}, {"label": "2024 Hyundai Kona Electric Standard Range", "eff": 290}, {"label": "2024 Jaguar I-Pace EV400", "eff": 420}, {"label": "2024 Jeep Wagoneer S AWD", "eff": 370}, {"label": "2024 Kia EV6 AWD GT", "eff": 410}, {"label": "2024 Kia EV6 Long Range AWD", "eff": 330}, {"label": "2024 Kia EV6 Long Range RWD", "eff": 290}, {"label": "2024 Kia EV6 Standard Range RWD", "eff": 290}, {"label": "2024 Kia EV9 Long Range AWD", "eff": 410}, {"label": "2024 Kia EV9 Long Range AWD GT-Line", "eff": 420}, {"label": "2024 Kia EV9 Long Range RWD", "eff": 380}, {"label": "2024 Kia EV9 Standard Range RWD", "eff": 380}, {"label": "2024 Kia Niro Electric", "eff": 290}, {"label": "2024 Lexus RZ 300e", "eff": 290}, {"label": "2024 Lexus RZ 450e AWD", "eff": 335}, {"label": "2024 Lucid Air G Touring XR AWD with 20 inch wheels", "eff": 280}, {"label": "2024 Lucid Air G Touring XR AWD with 21 inch wheels", "eff": 300}, {"label": "2024 Lucid Air G Touring XR AWD with19 inch wheels", "eff": 260}, {"label": "2024 Lucid Air Pure RWD with 19 inch wheels", "eff": 250}, {"label": "2024 Lucid Air Pure RWD with 20 inch wheels", "eff": 260}, {"label": "2024 Lucid Air Sapphire AWD", "eff": 320}, {"label": "2024 Lucid Air Touring AWD with 19 inch wheels", "eff": 250}, {"label": "2024 Lucid Air Touring AWD with 20 inch wheels", "eff": 270}, {"label": "2024 Lucid Air Touring AWD with 21inch wheels", "eff": 290}, {"label": "2024 MINI Cooper SE Hardtop 2 door", "eff": 310}, {"label": "2024 Maserati Grancabrio Folgore", "eff": 410}, {"label": "2024 Maserati Granturismo Folgore", "eff": 390}, {"label": "2024 Mercedes-Benz AMG EQE 4matic Plus", "eff": 460}, {"label": "2024 Mercedes-Benz AMG EQS 4matic Plus", "eff": 410}, {"label": "2024 Mercedes-Benz EQB 250 Plus", "eff": 310}, {"label": "2024 Mercedes-Benz EQB 300 4matic", "eff": 390}, {"label": "2024 Mercedes-Benz EQB 350 4matic", "eff": 390}, {"label": "2024 Mercedes-Benz EQE 350 4matic", "eff": 385}, {"label": "2024 Mercedes-Benz EQE 350 Plus", "eff": 355}, {"label": "2024 Mercedes-Benz EQE 500 4matic", "eff": 370}, {"label": "2024 Mercedes-Benz EQS 450 4matic", "eff": 380}, {"label": "2024 Mercedes-Benz EQS 450 Plus", "eff": 370}, {"label": "2024 Mercedes-Benz EQS 580 4matic", "eff": 380}, {"label": "2024 Mercedes-Benz EQS 680 4matic Maybach", "eff": 430}, {"label": "2024 Nissan ARIYA ENGAGE FWD 63kWh", "eff": 330}, {"label": "2024 Nissan ARIYA ENGAGE e-4ORCE 63kWh", "eff": 350}, {"label": "2024 Nissan ARIYA ENGAGE+/EVOLVE+ e-4ORCE 87kWh", "eff": 370}, {"label": "2024 Nissan ARIYA EVOLVE+/EMPOWER+ FWD 87kWh", "eff": 340}, {"label": "2024 Nissan ARIYA PLATINUM+ e-4ORCE 87kWh 19in. Wheels", "eff": 370}, {"label": "2024 Nissan ARIYA PLATINUM+ e-4ORCE 87kWh 20in. Wheels", "eff": 390}, {"label": "2024 Nissan ARIYA VENTURE Plus FWD 87kWh", "eff": 330}, {"label": "2024 Nissan LEAF", "eff": 300}, {"label": "2024 Nissan LEAF SV", "eff": 310}, {"label": "2024 Polestar 2 Dual Motor", "eff": 325}, {"label": "2024 Polestar 2 Dual Motor Performance Pack", "eff": 350}, {"label": "2024 Polestar 2 Single Motor", "eff": 295}, {"label": "2024 Porsche Macan 4 Electric", "eff": 340}, {"label": "2024 Porsche Macan Turbo Electric", "eff": 370}, {"label": "2024 Porsche Taycan 4 Cross Turismo", "eff": 420}, {"label": "2024 Porsche Taycan 4S Cross Turismo", "eff": 430}, {"label": "2024 Porsche Taycan 4S Performance Battery", "eff": 410}, {"label": "2024 Porsche Taycan 4S Performance Battery Plus", "eff": 420}, {"label": "2024 Porsche Taycan GTS", "eff": 410}, {"label": "2024 Porsche Taycan GTS Sport Turismo", "eff": 420}, {"label": "2024 Porsche Taycan Performance Battery", "eff": 410}, {"label": "2024 Porsche Taycan Performance Battery Plus", "eff": 410}, {"label": "2024 Porsche Taycan Turbo", "eff": 420}, {"label": "2024 Porsche Taycan Turbo Cross Turismo", "eff": 430}, {"label": "2024 Porsche Taycan Turbo S", "eff": 450}, {"label": "2024 Porsche Taycan Turbo S Cross Turismo", "eff": 450}, {"label": "2024 Rivian R1S AT Performance Dual Standard Plus", "eff": 520}, {"label": "2024 Rivian R1S All-Terrain Dual Large", "eff": 490}, {"label": "2024 Rivian R1S All-Terrain Dual Max", "eff": 460}, {"label": "2024 Rivian R1S All-Terrain Dual Standard Plus", "eff": 520}, {"label": "2024 Rivian R1S All-Terrain Performance Dual Large", "eff": 490}, {"label": "2024 Rivian R1S All-Terrain Performance Dual Max", "eff": 460}, {"label": "2024 Rivian R1S All-Terrain Quad Large", "eff": 540}, {"label": "2024 Rivian R1S Dual Large", "eff": 440}, {"label": "2024 Rivian R1S Dual Max", "eff": 420}, {"label": "2024 Rivian R1S Dual Standard", "eff": 465}, {"label": "2024 Rivian R1S Dual Standard Plus", "eff": 455}, {"label": "2024 Rivian R1S Performance Dual Large", "eff": 440}, {"label": "2024 Rivian R1S Performance Dual Max", "eff": 420}, {"label": "2024 Rivian R1S Performance Dual Standard", "eff": 470}, {"label": "2024 Rivian R1S Performance Dual Standard Plus", "eff": 440}, {"label": "2024 Rivian R1S Quad Large", "eff": 493}, {"label": "2024 Rivian R1T AT Performance Dual Standard Plus", "eff": 520}, {"label": "2024 Rivian R1T All-Terrain Dual Large", "eff": 490}, {"label": "2024 Rivian R1T All-Terrain Dual Max", "eff": 460}, {"label": "2024 Rivian R1T All-Terrain Dual Standard Plus", "eff": 520}, {"label": "2024 Rivian R1T All-Terrain Performance Dual Large", "eff": 490}, {"label": "2024 Rivian R1T All-Terrain Performance Dual Max", "eff": 460}, {"label": "2024 Rivian R1T All-Terrain Quad Large", "eff": 540}, {"label": "2024 Rivian R1T Dual Large", "eff": 435}, {"label": "2024 Rivian R1T Dual Max", "eff": 415}, {"label": "2024 Rivian R1T Dual Standard", "eff": 465}, {"label": "2024 Rivian R1T Dual Standard Plus", "eff": 455}, {"label": "2024 Rivian R1T Performance Dual Large", "eff": 435}, {"label": "2024 Rivian R1T Performance Dual Max", "eff": 415}, {"label": "2024 Rivian R1T Performance Dual Standard Plus", "eff": 455}, {"label": "2024 Rivian R1T Quad Large", "eff": 490}, {"label": "2024 Rolls-Royce Spectre", "eff": 430}, {"label": "2024 Rolls-Royce Spectre Black Badge", "eff": 445}, {"label": "2024 Subaru Solterra AWD", "eff": 320}, {"label": "2024 Subaru Solterra Limited/Touring AWD", "eff": 330}, {"label": "2024 Tesla Model 3 Long Range AWD", "eff": 260}, {"label": "2024 Tesla Model 3 Long Range AWD-E", "eff": 260}, {"label": "2024 Tesla Model 3 Long Range RWD", "eff": 250}, {"label": "2024 Tesla Model 3 Performance AWD", "eff": 300}, {"label": "2024 Tesla Model 3 RWD", "eff": 250}, {"label": "2024 Tesla Model S", "eff": 280}, {"label": "2024 Tesla Model S Plaid", "eff": 330}, {"label": "2024 Tesla Model X", "eff": 340}, {"label": "2024 Tesla Model X Plaid", "eff": 360}, {"label": "2024 Tesla Model Y Long Range AWD", "eff": 290}, {"label": "2024 Tesla Model Y Long Range AWD-I", "eff": 290}, {"label": "2024 Tesla Model Y Long Range RWD", "eff": 280}, {"label": "2024 Tesla Model Y Performance AWD", "eff": 320}, {"label": "2024 Tesla Model Y RWD", "eff": 280}, {"label": "2024 Toyota bZ4X", "eff": 280}, {"label": "2024 Toyota bZ4X AWD", "eff": 320}, {"label": "2024 Toyota bZ4X Limited", "eff": 300}, {"label": "2024 Toyota bZ4X Limited AWD", "eff": 330}, {"label": "2024 Vinfast VF 9 Eco", "eff": 450}, {"label": "2024 Vinfast VF 9 Plus", "eff": 490}, {"label": "2024 Volkswagen ID.4", "eff": 320}, {"label": "2024 Volkswagen ID.4 AWD Pro", "eff": 330}, {"label": "2024 Volkswagen ID.4 AWD Pro S", "eff": 330}, {"label": "2024 Volkswagen ID.4 Pro", "eff": 300}, {"label": "2024 Volkswagen ID.4 Pro S", "eff": 300}, {"label": "2024 Volkswagen ID.4 S", "eff": 320}, {"label": "2024 Volvo C40 Recharge", "eff": 310}, {"label": "2024 Volvo C40 Recharge twin", "eff": 340}, {"label": "2024 Volvo XC40 Recharge", "eff": 320}, {"label": "2024 Volvo XC40 Recharge twin", "eff": 340}, {"label": "2025 Audi Q4 45 e-tron", "eff": 290}, {"label": "2025 Audi Q4 55 e-tron quattro", "eff": 340}, {"label": "2025 Audi Q4 Sportback 55 e-tron quattro", "eff": 340}, {"label": "2025 Audi Q6 Sportback e-tron quattro", "eff": 335}, {"label": "2025 Audi Q6 e-tron", "eff": 345}, {"label": "2025 Audi Q6 e-tron quattro", "eff": 345}, {"label": "2025 Audi Q6 e-tron ultra", "eff": 320}, {"label": "2025 Audi Q8 Sportback e-tron quattro", "eff": 445}, {"label": "2025 Audi Q8 e-tron quattro", "eff": 445}, {"label": "2025 Audi RS e-tron GT Performance", "eff": 400}, {"label": "2025 Audi S e-tron GT", "eff": 380}, {"label": "2025 Audi SQ6 Sportback e-tron", "eff": 370}, {"label": "2025 Audi SQ6 e-tron", "eff": 380}, {"label": "2025 Audi SQ8 Sportback e-tron", "eff": 520}, {"label": "2025 Audi SQ8 e-tron", "eff": 520}, {"label": "2025 BMW i4 M50 Gran Coupe", "eff": 390}, {"label": "2025 BMW i4 eDrive35 Gran Coupe", "eff": 305}, {"label": "2025 BMW i4 eDrive40 Gran Coupe", "eff": 310}, {"label": "2025 BMW i4 xDrive40 Gran Coupe", "eff": 345}, {"label": "2025 BMW i5 M60 xDrive Sedan", "eff": 386}, {"label": "2025 BMW i5 eDrive40 Sedan", "eff": 336}, {"label": "2025 BMW i5 xDrive40 Sedan", "eff": 370}, {"label": "2025 BMW i7 M70 xDrive Sedan", "eff": 435}, {"label": "2025 BMW i7 eDrive50 Sedan", "eff": 390}, {"label": "2025 BMW i7 xDrive60 Sedan", "eff": 393}, {"label": "2025 BMW iX M60", "eff": 440}, {"label": "2025 BMW iX xDrive40", "eff": 396}, {"label": "2025 BMW iX xDrive50", "eff": 410}, {"label": "2025 Bugatti Rimac Nevera", "eff": 630}, {"label": "2025 Bugatti Rimac Nevera R", "eff": 660}, {"label": "2025 Cadillac CELESTIQ", "eff": 420}, {"label": "2025 Cadillac LYRIQ", "eff": 360}, {"label": "2025 Cadillac LYRIQ AWD", "eff": 390}, {"label": "2025 Chevrolet Blazer EV AWD", "eff": 360}, {"label": "2025 Chevrolet Blazer EV AWD SS", "eff": 400}, {"label": "2025 Chevrolet Blazer EV FWD", "eff": 320}, {"label": "2025 Chevrolet Blazer EV FWD 22 inch tire", "eff": 360}, {"label": "2025 Chevrolet Blazer EV RWD", "eff": 350}, {"label": "2025 Chevrolet Equinox EV AWD", "eff": 340}, {"label": "2025 Chevrolet Equinox EV FWD", "eff": 310}, {"label": "2025 Chevrolet Silverado EV", "eff": 510}, {"label": "2025 Chevrolet Silverado EV 2WT", "eff": 510}, {"label": "2025 Chevrolet Silverado EV 5WT", "eff": 480}, {"label": "2025 Chevrolet Silverado EV 8WT", "eff": 500}, {"label": "2025 Dodge Charger Daytona R/T AWD 245/55ZR18", "eff": 350}, {"label": "2025 Dodge Charger Daytona R/T AWD 255/45R20", "eff": 350}, {"label": "2025 Dodge Charger Daytona R/T AWD 275/40R20", "eff": 350}, {"label": "2025 Dodge Charger Daytona R/T AWD 305/35ZR20", "eff": 350}, {"label": "2025 Dodge Charger Daytona Scat Pack AWD 305/35ZR20", "eff": 380}, {"label": "2025 Dodge Charger Daytona Scat Pack AWD 325/35ZR20 Rear", "eff": 430}, {"label": "2025 Dodge Charger Daytona Scat Pack AWD 325/35ZR20 Rear A/S", "eff": 430}, {"label": "2025 Fiat 500e", "eff": 290}, {"label": "2025 Fiat 500e All Season", "eff": 310}, {"label": "2025 Ford F-150 Lightning 4WD ER1", "eff": 480}, {"label": "2025 Ford F-150 Lightning 4WD ER2", "eff": 470}, {"label": "2025 Ford F-150 Lightning 4WD PRO ER1", "eff": 480}, {"label": "2025 Ford F-150 Lightning 4WD SR", "eff": 490}, {"label": "2025 Ford F-150 Lightning Platinum 4WD", "eff": 510}, {"label": "2025 Ford Mustang Mach-E AWD", "eff": 340}, {"label": "2025 Ford Mustang Mach-E AWD Extended", "eff": 320}, {"label": "2025 Ford Mustang Mach-E GT", "eff": 370}, {"label": "2025 Ford Mustang Mach-E RWD", "eff": 310}, {"label": "2025 Ford Mustang Mach-E RWD Extended", "eff": 310}, {"label": "2025 Ford Mustang Mach-E Rally", "eff": 390}, {"label": "2025 GMC Hummer EV Pickup 2X", "eff": 640}, {"label": "2025 GMC Hummer EV Pickup 3X", "eff": 650}, {"label": "2025 GMC Hummer EV Pickup MT Tires 2X", "eff": 720}, {"label": "2025 GMC Hummer EV Pickup MT Tires 3X", "eff": 700}, {"label": "2025 GMC Hummer EV SUV 2X", "eff": 640}, {"label": "2025 GMC Hummer EV SUV 3X", "eff": 650}, {"label": "2025 GMC Hummer EV SUV MT Tires 2X", "eff": 720}, {"label": "2025 GMC Hummer EV SUV MT Tires 3X", "eff": 700}, {"label": "2025 GMC Sierra EV", "eff": 520}, {"label": "2025 Genesis Electrified G80", "eff": 350}, {"label": "2025 Genesis Electrified GV70", "eff": 370}, {"label": "2025 Genesis GV60 AWD", "eff": 340}, {"label": "2025 Genesis GV60 AWD Advanced", "eff": 350}, {"label": "2025 Genesis GV60 AWD Performance", "eff": 370}, {"label": "2025 Genesis GV60 RWD", "eff": 300}, {"label": "2025 Honda Prologue AWD Elite", "eff": 350}, {"label": "2025 Honda Prologue AWD Touring", "eff": 340}, {"label": "2025 Honda Prologue FWD", "eff": 330}, {"label": "2025 Hyundai Ioniq 5 AWD", "eff": 330}, {"label": "2025 Hyundai Ioniq 5 AWD XRT", "eff": 360}, {"label": "2025 Hyundai Ioniq 5 N", "eff": 430}, {"label": "2025 Hyundai Ioniq 5 RWD", "eff": 300}, {"label": "2025 Hyundai Ioniq 5 Robo taxi", "eff": 480}, {"label": "2025 Hyundai Ioniq 5 Standard range", "eff": 290}, {"label": "2025 Hyundai Ioniq 6 AWD", "eff": 305}, {"label": "2025 Hyundai Ioniq 6 RWD", "eff": 280}, {"label": "2025 Hyundai Ioniq 6 Standard Range", "eff": 250}, {"label": "2025 Hyundai Kona Electric", "eff": 300}, {"label": "2025 Hyundai Kona Electric Standard Range", "eff": 290}, {"label": "2025 Jeep Wagoneer S AWD", "eff": 385}, {"label": "2025 Kia EV6 AWD GT", "eff": 400}, {"label": "2025 Kia EV6 Long Range AWD", "eff": 335}, {"label": "2025 Kia EV6 Long Range RWD", "eff": 300}, {"label": "2025 Kia EV6 Standard Range RWD", "eff": 290}, {"label": "2025 Kia EV9 Long Range AWD", "eff": 410}, {"label": "2025 Kia EV9 Long Range AWD GT-Line", "eff": 420}, {"label": "2025 Kia EV9 Long Range RWD", "eff": 380}, {"label": "2025 Kia EV9 Standard Range RWD", "eff": 380}, {"label": "2025 Kia Niro Electric", "eff": 300}, {"label": "2025 Lexus RZ 300e", "eff": 290}, {"label": "2025 Lexus RZ 450e AWD", "eff": 330}, {"label": "2025 Lucid Air G Touring XR AWD with 19 inch wheels", "eff": 260}, {"label": "2025 Lucid Air G Touring XR AWD with 20 inch wheels", "eff": 280}, {"label": "2025 Lucid Air G Touring XR AWD with 21 inch wheels", "eff": 300}, {"label": "2025 Lucid Air Pure RWD with 19 inch wheels", "eff": 230}, {"label": "2025 Lucid Air Pure RWD with 20 inch wheels", "eff": 260}, {"label": "2025 Lucid Air Sapphire AWD", "eff": 320}, {"label": "2025 Lucid Air Touring AWD with 19 inch wheels", "eff": 260}, {"label": "2025 Lucid Air Touring AWD with 20 inch wheels", "eff": 280}, {"label": "2025 Lucid Air Touring AWD with 21 inch wheels", "eff": 290}, {"label": "2025 Lucid Gravity GT w/20F21R wheels", "eff": 315}, {"label": "2025 Lucid Gravity GT w/21F22R wheels", "eff": 350}, {"label": "2025 Lucid Gravity GT w/22F23R wheels", "eff": 350}, {"label": "2025 MINI Countryman SE ALL4", "eff": 360}, {"label": "2025 Maserati Grancabrio Folgore", "eff": 410}, {"label": "2025 Maserati Granturismo Folgore", "eff": 410}, {"label": "2025 Maserati Grecale Folgore", "eff": 495}, {"label": "2025 Mercedes-Benz AMG EQE 4matic Plus", "eff": 470}, {"label": "2025 Mercedes-Benz AMG EQS 4matic Plus", "eff": 430}, {"label": "2025 Mercedes-Benz EQB 250 Plus", "eff": 310}, {"label": "2025 Mercedes-Benz EQB 300 4matic", "eff": 390}, {"label": "2025 Mercedes-Benz EQB 350 4matic", "eff": 390}, {"label": "2025 Mercedes-Benz EQE 350 4matic", "eff": 405}, {"label": "2025 Mercedes-Benz EQE 350 Plus", "eff": 360}, {"label": "2025 Mercedes-Benz EQE 500 4matic", "eff": 410}, {"label": "2025 Mercedes-Benz EQS 450 4matic", "eff": 400}, {"label": "2025 Mercedes-Benz EQS 450 Plus", "eff": 375}, {"label": "2025 Mercedes-Benz EQS 580 4matic", "eff": 390}, {"label": "2025 Mercedes-Benz EQS 680 4matic Maybach", "eff": 440}, {"label": "2025 Mercedes-Benz G 580 with EQ Technology", "eff": 540}, {"label": "2025 Nissan ARIYA ENGAGE+/EVOLVE+ e-4ORCE 87kWh", "eff": 370}, {"label": "2025 Nissan ARIYA EVOLVE+ FWD 87kWh", "eff": 340}, {"label": "2025 Nissan ARIYA FWD 63kWh", "eff": 330}, {"label": "2025 Nissan ARIYA PLATINUM+ e-4ORCE 87kWh 19in. Wheels", "eff": 370}, {"label": "2025 Nissan ARIYA PLATINUM+ e-4ORCE 87kWh 20in. Wheels", "eff": 390}, {"label": "2025 Nissan ARIYA e-4ORCE 63kWh", "eff": 350}, {"label": "2025 Nissan LEAF", "eff": 300}, {"label": "2025 Nissan LEAF SV", "eff": 310}, {"label": "2025 Polestar 2 Dual Motor", "eff": 345}, {"label": "2025 Polestar 2 Dual Motor Performance Pack", "eff": 370}, {"label": "2025 Polestar 2 Single Motor", "eff": 305}, {"label": "2025 Polestar 3 Long Range Dual Motor", "eff": 396}, {"label": "2025 Polestar 3 Long Range Dual Motor Performance Pack", "eff": 440}, {"label": "2025 Polestar 3 Long Range Single Motor", "eff": 360}, {"label": "2025 Polestar 4 Long Range Dual Motor", "eff": 410}, {"label": "2025 Polestar 4 Long Range Single Motor", "eff": 370}, {"label": "2025 Porsche Macan 4 Electric", "eff": 340}, {"label": "2025 Porsche Macan 4S Electric", "eff": 370}, {"label": "2025 Porsche Macan Electric", "eff": 340}, {"label": "2025 Porsche Macan Turbo Electric", "eff": 370}, {"label": "2025 Porsche Taycan 4 Cross Turismo", "eff": 420}, {"label": "2025 Porsche Taycan 4 Perf Battery Plus", "eff": 390}, {"label": "2025 Porsche Taycan 4S Cross Turismo", "eff": 420}, {"label": "2025 Porsche Taycan 4S Perf Battery Plus", "eff": 390}, {"label": "2025 Porsche Taycan 4S Perf Battery Plus 19 inch Wheels", "eff": 360}, {"label": "2025 Porsche Taycan 4S Performance Battery", "eff": 380}, {"label": "2025 Porsche Taycan GTS", "eff": 390}, {"label": "2025 Porsche Taycan GTS Sport Turismo", "eff": 410}, {"label": "2025 Porsche Taycan Perf Battery Plus", "eff": 370}, {"label": "2025 Porsche Taycan Performance Battery", "eff": 370}, {"label": "2025 Porsche Taycan Turbo", "eff": 390}, {"label": "2025 Porsche Taycan Turbo 21in Aero-Design wheel", "eff": 360}, {"label": "2025 Porsche Taycan Turbo Cross Turismo", "eff": 430}, {"label": "2025 Porsche Taycan Turbo GT", "eff": 410}, {"label": "2025 Porsche Taycan Turbo GT with Weissach Package", "eff": 420}, {"label": "2025 Porsche Taycan Turbo S", "eff": 430}, {"label": "2025 Porsche Taycan Turbo S 21in Aero-Design wheel", "eff": 380}, {"label": "2025 Porsche Taycan Turbo S Cross Turismo", "eff": 440}, {"label": "2025 Rivian R1S All-Terrain Dual Large", "eff": 440}, {"label": "2025 Rivian R1S All-Terrain Dual Large Plus", "eff": 470}, {"label": "2025 Rivian R1S All-Terrain Dual Max", "eff": 430}, {"label": "2025 Rivian R1S All-Terrain Performance  Dual Max", "eff": 430}, {"label": "2025 Rivian R1S All-Terrain Performance Dual Large", "eff": 440}, {"label": "2025 Rivian R1S All-Terrain Performance Dual Large Plus", "eff": 470}, {"label": "2025 Rivian R1S All-Terrain Tri Max", "eff": 500}, {"label": "2025 Rivian R1S Dual Large", "eff": 410}, {"label": "2025 Rivian R1S Dual Large Plus", "eff": 420}, {"label": "2025 Rivian R1S Dual Max", "eff": 410}, {"label": "2025 Rivian R1S Dual Standard", "eff": 415}, {"label": "2025 Rivian R1S Performance Dual Large", "eff": 410}, {"label": "2025 Rivian R1S Performance Dual Large Plus", "eff": 420}, {"label": "2025 Rivian R1S Performance Dual Max", "eff": 410}, {"label": "2025 Rivian R1S Tri Max", "eff": 450}, {"label": "2025 Rivian R1T All-Terrain Dual Large", "eff": 440}, {"label": "2025 Rivian R1T All-Terrain Dual Large Plus", "eff": 470}, {"label": "2025 Rivian R1T All-Terrain Dual Max", "eff": 430}, {"label": "2025 Rivian R1T All-Terrain Performance Dual Large", "eff": 440}, {"label": "2025 Rivian R1T All-Terrain Performance Dual Large Plus", "eff": 470}, {"label": "2025 Rivian R1T All-Terrain Performance Dual Max", "eff": 430}, {"label": "2025 Rivian R1T All-Terrain Tri Max", "eff": 500}, {"label": "2025 Rivian R1T Dual Large", "eff": 410}, {"label": "2025 Rivian R1T Dual Large Plus", "eff": 420}, {"label": "2025 Rivian R1T Dual Max", "eff": 405}, {"label": "2025 Rivian R1T Dual Standard", "eff": 415}, {"label": "2025 Rivian R1T Performance Dual Large", "eff": 410}, {"label": "2025 Rivian R1T Performance Dual Large Plus", "eff": 420}, {"label": "2025 Rivian R1T Performance Dual Max", "eff": 405}, {"label": "2025 Rivian R1T Tri Max", "eff": 450}, {"label": "2025 Rolls-Royce Spectre", "eff": 460}, {"label": "2025 Rolls-Royce Spectre Black Badge", "eff": 465}, {"label": "2025 Subaru Solterra AWD", "eff": 320}, {"label": "2025 Subaru Solterra Limited/Touring AWD", "eff": 330}, {"label": "2025 Tesla Cybertruck AWD", "eff": 430}, {"label": "2025 Tesla Cybertruck Long Range", "eff": 420}, {"label": "2025 Tesla Model 3 Long Range AWD", "eff": 260}, {"label": "2025 Tesla Model 3 Long Range RWD", "eff": 250}, {"label": "2025 Tesla Model 3 Long Range RWD-I", "eff": 260}, {"label": "2025 Tesla Model 3 Performance AWD", "eff": 310}, {"label": "2025 Tesla Model S", "eff": 270}, {"label": "2025 Tesla Model S Plaid", "eff": 340}, {"label": "2025 Tesla Model X", "eff": 340}, {"label": "2025 Tesla Model X Plaid", "eff": 370}, {"label": "2025 Tesla Model Y Long Range AWD", "eff": 290}, {"label": "2025 Tesla Model Y Long Range RWD", "eff": 270}, {"label": "2025 Tesla Model Y Performance AWD", "eff": 320}, {"label": "2025 Toyota bZ4X", "eff": 280}, {"label": "2025 Toyota bZ4X AWD", "eff": 315}, {"label": "2025 Toyota bZ4X LIMITED", "eff": 300}, {"label": "2025 Toyota bZ4X LIMITED AWD", "eff": 320}, {"label": "2025 Vinfast VF 6 Plus", "eff": 400}, {"label": "2025 Vinfast VF 7 Plus", "eff": 440}, {"label": "2025 Vinfast VF 8 Eco", "eff": 460}, {"label": "2025 Vinfast VF 8 Plus", "eff": 440}, {"label": "2025 Vinfast VF 9 Plus", "eff": 500}, {"label": "2025 Volkswagen ID. Buzz", "eff": 410}, {"label": "2025 Volkswagen ID. Buzz 4motion", "eff": 420}, {"label": "2025 Volkswagen ID.4", "eff": 320}, {"label": "2025 Volkswagen ID.4 AWD Pro", "eff": 330}, {"label": "2025 Volkswagen ID.4 AWD Pro S", "eff": 330}, {"label": "2025 Volkswagen ID.4 Pro", "eff": 300}, {"label": "2025 Volkswagen ID.4 Pro S", "eff": 300}, {"label": "2025 Volkswagen ID.4 S", "eff": 320}, {"label": "2025 Volvo EC40", "eff": 320}, {"label": "2025 Volvo EC40 Twin", "eff": 350}, {"label": "2025 Volvo EX30 Single Motor extended range", "eff": 295}, {"label": "2025 Volvo EX30 Twin Performance", "eff": 310}, {"label": "2025 Volvo EX40", "eff": 320}, {"label": "2025 Volvo EX40 Twin", "eff": 360}, {"label": "2025 Volvo EX90 Twin Motor", "eff": 410}, {"label": "2025 Volvo EX90 Twin Motor Performance", "eff": 410}, {"label": "2026 Acura ZDX AWD", "eff": 380}, {"label": "2026 Acura ZDX AWD Type S", "eff": 410}, {"label": "2026 Acura ZDX RWD", "eff": 370}, {"label": "2026 Audi Q4 45 e-tron", "eff": 290}, {"label": "2026 Audi Q4 55 e-tron quattro", "eff": 350}, {"label": "2026 Audi Q4 Sportback 55 e-tron quattro", "eff": 350}, {"label": "2026 Audi RS e-tron GT Performance", "eff": 400}, {"label": "2026 Audi S e-tron GT", "eff": 380}, {"label": "2026 BMW i4 M60 xDrive Gran Coupe", "eff": 375}, {"label": "2026 BMW i4 eDrive35 Gran Coupe", "eff": 310}, {"label": "2026 BMW i4 eDrive40 Gran Coupe", "eff": 300}, {"label": "2026 BMW i4 xDrive40 Gran Coupe", "eff": 345}, {"label": "2026 BMW i5 M60 xDrive Sedan", "eff": 356}, {"label": "2026 BMW i5 eDrive40 Sedan", "eff": 323}, {"label": "2026 BMW i5 xDrive40 Sedan", "eff": 353}, {"label": "2026 BMW i7 M70 xDrive Sedan", "eff": 435}, {"label": "2026 BMW i7 eDrive50 Sedan", "eff": 390}, {"label": "2026 BMW i7 xDrive60 Sedan", "eff": 393}, {"label": "2026 BMW iX M70", "eff": 436}, {"label": "2026 BMW iX xDrive45", "eff": 382}, {"label": "2026 BMW iX xDrive60", "eff": 377}, {"label": "2026 Bugatti Rimac Nevera R", "eff": 660}, {"label": "2026 Cadillac CELESTIQ", "eff": 420}, {"label": "2026 Cadillac LYRIQ", "eff": 370}, {"label": "2026 Cadillac LYRIQ AWD", "eff": 400}, {"label": "2026 Cadillac LYRIQ PAWD", "eff": 380}, {"label": "2026 Cadillac LYRIQ PAWD V SERIES", "eff": 420}, {"label": "2026 Cadillac OPTIQ AWD", "eff": 340}, {"label": "2026 Cadillac OPTIQ AWD V SERIES 11 kW Charger 15 modes", "eff": 370}, {"label": "2026 Cadillac OPTIQ AWD V SERIES 19 kW charger 15 modes", "eff": 410}, {"label": "2026 Cadillac OPTIQ RWD", "eff": 320}, {"label": "2026 Cadillac VISTIQ", "eff": 390}, {"label": "2026 Chevrolet Blazer EV AWD", "eff": 360}, {"label": "2026 Chevrolet Blazer EV AWD SS", "eff": 400}, {"label": "2026 Chevrolet Blazer EV FWD", "eff": 320}, {"label": "2026 Chevrolet Blazer EV FWD 22 inch tire", "eff": 360}, {"label": "2026 Chevrolet Equinox EV AWD", "eff": 340}, {"label": "2026 Chevrolet Equinox EV FWD", "eff": 310}, {"label": "2026 Chevrolet Silverado EV 14-mod battery, 11kW 15-mode charger", "eff": 500}, {"label": "2026 Chevrolet Silverado EV 14-mod battery, 11kW 6-mode charger", "eff": 500}, {"label": "2026 Chevrolet Silverado EV 20-mod battery, 11kW 15-mode charger", "eff": 500}, {"label": "2026 Chevrolet Silverado EV 20-mod battery, 19kW 15-mode charger", "eff": 520}, {"label": "2026 Chevrolet Silverado EV 20-mod battery, 19kW 6-mode charger", "eff": 480}, {"label": "2026 Chevrolet Silverado EV 24-mod battery, 19kW 6-mode charger", "eff": 490}, {"label": "2026 Dodge Charger Daytona R/T AWD 245/55ZR18", "eff": 400}, {"label": "2026 Dodge Charger Daytona R/T AWD 255/45R20", "eff": 360}, {"label": "2026 Dodge Charger Daytona R/T AWD 275/40R20", "eff": 410}, {"label": "2026 Dodge Charger Daytona R/T AWD 305/35ZR20", "eff": 390}, {"label": "2026 Dodge Charger Daytona Scat Pack AWD 305/35ZR20", "eff": 390}, {"label": "2026 Dodge Charger Daytona Scat Pack AWD 325/35ZR20 Rear", "eff": 470}, {"label": "2026 Dodge Charger Daytona Scat Pack AWD 325/35ZR20 Rear A/S", "eff": 430}, {"label": "2026 Fiat 500e", "eff": 290}, {"label": "2026 Fiat 500e All Season", "eff": 310}, {"label": "2026 Ford Mustang Mach-E AWD", "eff": 340}, {"label": "2026 Ford Mustang Mach-E AWD Extended", "eff": 320}, {"label": "2026 Ford Mustang Mach-E GT", "eff": 370}, {"label": "2026 Ford Mustang Mach-E RWD", "eff": 310}, {"label": "2026 Ford Mustang Mach-E RWD Extended", "eff": 310}, {"label": "2026 Ford Mustang Mach-E Rally", "eff": 400}, {"label": "2026 GMC Sierra EV 14-mod battery, 11kW 15-mode charger", "eff": 500}, {"label": "2026 GMC Sierra EV 20-mod battery, 11kW 15-mode charger", "eff": 500}, {"label": "2026 GMC Sierra EV 20-mod battery, 19kW 15-mode charger", "eff": 520}, {"label": "2026 Genesis Electrified G80", "eff": 350}, {"label": "2026 Genesis Electrified GV70 AWD", "eff": 365}, {"label": "2026 Genesis GV60 AWD", "eff": 340}, {"label": "2026 Genesis GV60 AWD Advanced", "eff": 350}, {"label": "2026 Genesis GV60 AWD Performance", "eff": 370}, {"label": "2026 Genesis GV60 RWD", "eff": 310}, {"label": "2026 Honda Prologue AWD", "eff": 345}, {"label": "2026 Honda Prologue FWD", "eff": 330}, {"label": "2026 Hyundai Ioniq 5 AWD", "eff": 330}, {"label": "2026 Hyundai Ioniq 5 AWD XRT", "eff": 360}, {"label": "2026 Hyundai Ioniq 5 N", "eff": 430}, {"label": "2026 Hyundai Ioniq 5 RWD", "eff": 300}, {"label": "2026 Hyundai Ioniq 5 Robo taxi", "eff": 480}, {"label": "2026 Hyundai Ioniq 5 Standard range", "eff": 290}, {"label": "2026 Hyundai Ioniq 9 AWD", "eff": 380}, {"label": "2026 Hyundai Ioniq 9 AWD Performance", "eff": 400}, {"label": "2026 Hyundai Ioniq 9 RWD", "eff": 370}, {"label": "2026 Jeep Wagoneer S AWD", "eff": 375}, {"label": "2026 Kia EV6 AWD GT", "eff": 400}, {"label": "2026 Kia EV6 Long Range AWD", "eff": 335}, {"label": "2026 Kia EV6 Long Range RWD", "eff": 300}, {"label": "2026 Kia EV6 Standard Range RWD", "eff": 290}, {"label": "2026 Kia EV9 GT", "eff": 430}, {"label": "2026 Kia EV9 Long Range AWD", "eff": 400}, {"label": "2026 Kia EV9 Long Range AWD GT-Line", "eff": 410}, {"label": "2026 Kia EV9 Long Range RWD", "eff": 380}, {"label": "2026 Kia EV9 Standard Range RWD", "eff": 380}, {"label": "2026 Kia Niro Electric", "eff": 300}, {"label": "2026 Lexus RZ 350e FWD", "eff": 280}, {"label": "2026 Lexus RZ 450e AWD", "eff": 323}, {"label": "2026 Lexus RZ 550e AWD", "eff": 350}, {"label": "2026 Lucid Air G Touring XR AWD with 20 inch wheels", "eff": 280}, {"label": "2026 Lucid Air G Touring XR AWD with 21 inch wheels", "eff": 300}, {"label": "2026 Lucid Air G Touring XR AWD with19 inch wheels", "eff": 260}, {"label": "2026 Lucid Air Pure RWD with 19 inch wheels", "eff": 230}, {"label": "2026 Lucid Air Pure RWD with 20 inch wheels", "eff": 260}, {"label": "2026 Lucid Air Sapphire AWD", "eff": 320}, {"label": "2026 Lucid Air Touring AWD with 19 inch wheels", "eff": 250}, {"label": "2026 Lucid Air Touring AWD with 20 inch wheels", "eff": 270}, {"label": "2026 Lucid Gravity Dream w/20F21R wheels", "eff": 340}, {"label": "2026 Lucid Gravity Dream w/21F22R wheels", "eff": 380}, {"label": "2026 Lucid Gravity Dream w/22F23R wheels", "eff": 380}, {"label": "2026 Lucid Gravity GT w/20F21R wheels", "eff": 315}, {"label": "2026 Lucid Gravity GT w/21F22R wheels", "eff": 350}, {"label": "2026 Lucid Gravity GT w/22F23R wheels", "eff": 350}, {"label": "2026 Lucid Gravity Touring w/20F21R wheels", "eff": 300}, {"label": "2026 MINI Countryman SE ALL4", "eff": 360}, {"label": "2026 Mercedes-Benz AMG EQE 4matic Plus", "eff": 470}, {"label": "2026 Mercedes-Benz CLA250 Plus with EQ Tech", "eff": 290}, {"label": "2026 Mercedes-Benz CLA350 4matic with EQ Tech", "eff": 290}, {"label": "2026 Mercedes-Benz EQE 320 4matic", "eff": 405}, {"label": "2026 Mercedes-Benz EQE 320 Plus", "eff": 360}, {"label": "2026 Mercedes-Benz EQS 400 4matic", "eff": 430}, {"label": "2026 Mercedes-Benz EQS 450 4matic", "eff": 370}, {"label": "2026 Mercedes-Benz EQS 450 Plus", "eff": 340}, {"label": "2026 Mercedes-Benz EQS 550 4matic", "eff": 420}, {"label": "2026 Mercedes-Benz EQS 580 4matic", "eff": 360}, {"label": "2026 Mercedes-Benz EQS 680 4matic Maybach", "eff": 400}, {"label": "2026 Mercedes-Benz G 580 with EQ Technology", "eff": 540}, {"label": "2026 Nissan ARIYA FWD 63kWh", "eff": 330}, {"label": "2026 Nissan ARIYA FWD 87kWh", "eff": 340}, {"label": "2026 Nissan ARIYA PLATINUM+ e-4ORCE 87kWh 19in. Wheels", "eff": 370}, {"label": "2026 Nissan ARIYA e-4ORCE 63kWh", "eff": 350}, {"label": "2026 Nissan ARIYA e-4ORCE 87kWh", "eff": 370}, {"label": "2026 Nissan LEAF 75kWh", "eff": 303}, {"label": "2026 Polestar 3 Long Range Dual Motor", "eff": 400}, {"label": "2026 Polestar 3 Long Range Dual Motor Performance Pack", "eff": 420}, {"label": "2026 Polestar 3 Long Range Single Motor", "eff": 350}, {"label": "2026 Polestar 4 Long Range Dual Motor", "eff": 400}, {"label": "2026 Polestar 4 Long Range Dual Motor Performance", "eff": 440}, {"label": "2026 Polestar 4 Long Range Single Motor", "eff": 350}, {"label": "2026 Porsche Taycan 4 Cross Turismo", "eff": 420}, {"label": "2026 Porsche Taycan 4 Perf Battery Plus", "eff": 390}, {"label": "2026 Porsche Taycan 4S Cross Turismo", "eff": 420}, {"label": "2026 Porsche Taycan 4S Perf Battery Plus", "eff": 390}, {"label": "2026 Porsche Taycan 4S Perf Battery Plus 19in All-Season", "eff": 360}, {"label": "2026 Porsche Taycan 4S Performance Battery", "eff": 380}, {"label": "2026 Porsche Taycan GTS", "eff": 390}, {"label": "2026 Porsche Taycan GTS Sport Turismo", "eff": 410}, {"label": "2026 Porsche Taycan Performance Battery", "eff": 370}, {"label": "2026 Porsche Taycan Turbo", "eff": 390}, {"label": "2026 Porsche Taycan Turbo Cross Turismo", "eff": 430}, {"label": "2026 Porsche Taycan Turbo GT", "eff": 410}, {"label": "2026 Porsche Taycan Turbo GT with Weissach Package", "eff": 420}, {"label": "2026 Porsche Taycan Turbo S", "eff": 430}, {"label": "2026 Porsche Taycan Turbo S Cross Turismo", "eff": 440}, {"label": "2026 Rivian R1S All-Terrain Dual Large", "eff": 440}, {"label": "2026 Rivian R1S All-Terrain Dual Large Plus", "eff": 470}, {"label": "2026 Rivian R1S All-Terrain Dual Max", "eff": 430}, {"label": "2026 Rivian R1S All-Terrain Performance  Dual Max", "eff": 430}, {"label": "2026 Rivian R1S All-Terrain Performance Dual Large", "eff": 440}, {"label": "2026 Rivian R1S All-Terrain Performance Dual Large Plus", "eff": 470}, {"label": "2026 Rivian R1S All-Terrain Tri Max", "eff": 500}, {"label": "2026 Rivian R1S Dual Large", "eff": 410}, {"label": "2026 Rivian R1S Dual Large Plus", "eff": 420}, {"label": "2026 Rivian R1S Dual Max", "eff": 410}, {"label": "2026 Rivian R1S Dual Standard", "eff": 415}, {"label": "2026 Rivian R1S Performance Dual Large", "eff": 410}, {"label": "2026 Rivian R1S Performance Dual Large Plus", "eff": 420}, {"label": "2026 Rivian R1S Performance Dual Max", "eff": 410}, {"label": "2026 Rivian R1S Quad Max", "eff": 470}, {"label": "2026 Rivian R1S Tri Max", "eff": 450}, {"label": "2026 Rivian R1T All-Terrain Dual Large", "eff": 440}, {"label": "2026 Rivian R1T All-Terrain Dual Large Plus", "eff": 470}, {"label": "2026 Rivian R1T All-Terrain Dual Max", "eff": 430}, {"label": "2026 Rivian R1T All-Terrain Performance Dual Large", "eff": 440}, {"label": "2026 Rivian R1T All-Terrain Performance Dual Large Plus", "eff": 470}, {"label": "2026 Rivian R1T All-Terrain Performance Dual Max", "eff": 430}, {"label": "2026 Rivian R1T All-Terrain Tri Max", "eff": 500}, {"label": "2026 Rivian R1T Dual Large", "eff": 410}, {"label": "2026 Rivian R1T Dual Large Plus", "eff": 420}, {"label": "2026 Rivian R1T Dual Max", "eff": 405}, {"label": "2026 Rivian R1T Dual Standard", "eff": 415}, {"label": "2026 Rivian R1T Performance Dual Large", "eff": 410}, {"label": "2026 Rivian R1T Performance Dual Large Plus", "eff": 420}, {"label": "2026 Rivian R1T Performance Dual Max", "eff": 405}, {"label": "2026 Rivian R1T Quad Max", "eff": 470}, {"label": "2026 Rivian R1T Tri Max", "eff": 450}, {"label": "2026 Rolls-Royce Spectre", "eff": 460}, {"label": "2026 Rolls-Royce Spectre Black Badge", "eff": 465}, {"label": "2026 Subaru Solterra 20 AWD", "eff": 290}, {"label": "2026 Subaru Solterra AWD", "eff": 280}, {"label": "2026 Tesla Cybertruck AWD", "eff": 430}, {"label": "2026 Tesla Cybertruck Long Range", "eff": 430}, {"label": "2026 Tesla Model 3 Performance", "eff": 300}, {"label": "2026 Tesla Model 3 Performance AWD", "eff": 300}, {"label": "2026 Tesla Model 3 Premium AWD", "eff": 260}, {"label": "2026 Tesla Model 3 Premium RWD", "eff": 250}, {"label": "2026 Tesla Model 3 Standard RWD", "eff": 240}, {"label": "2026 Tesla Model S", "eff": 270}, {"label": "2026 Tesla Model S Plaid", "eff": 335}, {"label": "2026 Tesla Model X", "eff": 320}, {"label": "2026 Tesla Model X Plaid", "eff": 340}, {"label": "2026 Tesla Model Y Long Range AWD", "eff": 270}, {"label": "2026 Tesla Model Y Long Range RWD", "eff": 250}, {"label": "2026 Tesla Model Y Performance AWD", "eff": 320}, {"label": "2026 Tesla Model Y Standard RWD", "eff": 250}, {"label": "2026 Toyota bZ", "eff": 260}, {"label": "2026 Toyota bZ AWD", "eff": 280}, {"label": "2026 Toyota bZ AWD LIMITED", "eff": 290}, {"label": "2026 Toyota bZ LIMITED", "eff": 270}, {"label": "2026 Volkswagen ID.4", "eff": 300}, {"label": "2026 Volkswagen ID.4 AWD", "eff": 330}, {"label": "2026 Volvo EC40", "eff": 320}, {"label": "2026 Volvo EC40 Twin", "eff": 350}, {"label": "2026 Volvo EX30 Cross Country", "eff": 360}, {"label": "2026 Volvo EX30 Single motor extended range", "eff": 290}, {"label": "2026 Volvo EX30 Twin Performance", "eff": 310}, {"label": "2026 Volvo EX40", "eff": 320}, {"label": "2026 Volvo EX40 Twin", "eff": 360}, {"label": "2026 Volvo EX90", "eff": 355}, {"label": "2026 Volvo EX90 Twin Motor", "eff": 385}, {"label": "2026 Volvo EX90 Twin Motor Performance", "eff": 385}];
+  
+  let optionsHtml = '<option value="275">Average EV (275 Wh/mi)</option>';
+  evDatabase.forEach(opt => {
+    optionsHtml += `<option value="${opt.eff}">${opt.label} (${opt.eff} Wh/mi)</option>`;
+  });
+  
+  document.getElementById('ev-select').innerHTML = optionsHtml;
+  document.getElementById('ev-select-t').innerHTML = optionsHtml;
+
+  const container = document.getElementById('map-container');
+  const w = container.clientWidth || 800;
+  const h = Math.round(w * 0.60);
+
+  const svg = d3.select(container).append('svg')
+    .attr('viewBox', `0 0 ${w} ${h}`)
+    .attr('width', '100%');
+
+  const proj = d3.geoAlbersUsa()
+    .scale(w * 1.25)
+    .translate([w / 2, h / 2]);
+
+  const path = d3.geoPath(proj);
+
+  pathsSel = svg.append('g').selectAll('path')
+    .data(topojson.feature(us, us.objects.states).features)
+    .join('path')
+    .attr('d', path)
+    .attr('stroke', '#fff')
+    .attr('stroke-width', 0.6)
+    .attr('fill', d => getFill(stateMap[d.properties.name]))
+    .style('cursor', 'pointer')
+    .on('mousemove', function(event, d) {
+      const sd = stateMap[d.properties.name];
+      if (!sd) return;
+
+      const priceLabel = currentCharging === 'home' ? 'Home elec.' : 'Public charger';
+      const priceDisp  = currentCharging === 'home'
+        ? (sd.elecPrice * 100).toFixed(2) + '¢/kWh'
+        : '$' + sd.elecPrice.toFixed(3) + '/kWh';
+
+      const savAbs   = Math.abs(sd.savings);
+      const savSign  = sd.savings >= 0 ? '+' : '';
+      const savClass = sd.savings >= 0 ? 'tt-green' : 'tt-red';
+      const savLabel = sd.savings >= 0 ? 'EV saves' : 'Gas saves';
+
+      tooltip.style.display = 'block';
+      tooltip.style.left    = (event.clientX + 16) + 'px';
+      tooltip.style.top     = (event.clientY - 10) + 'px';
+      tooltip.innerHTML = `
+        <div class="tt-title">${sd.name}</div>
+        <div class="tt-row">
+          <span class="tt-label">${priceLabel}</span>
+          <span class="tt-val">${priceDisp}</span>
+        </div>
+        <div class="tt-row">
+          <span class="tt-label">Gas (${currentGrade})</span>
+          <span class="tt-val">$${sd.gasPrice.toFixed(3)}/gal</span>
+        </div>
+        <div class="tt-row">
+          <span class="tt-label">EV cost/100 mi</span>
+          <span class="tt-val">$${sd.evCost100.toFixed(2)}</span>
+        </div>
+        <div class="tt-row">
+          <span class="tt-label">Gas cost/100 mi</span>
+          <span class="tt-val">$${sd.gasCost100.toFixed(2)}</span>
+        </div>
+        <div class="tt-row" style="border-top:1px solid rgba(255,255,255,.15);margin-top:5px;padding-top:5px;">
+          <span class="tt-label">${savLabel}</span>
+          <span class="tt-val ${savClass}">${savSign}$${savAbs.toFixed(2)}/100 mi</span>
+        </div>
+      `;
+    })
+    .on('mouseleave', () => { tooltip.style.display = 'none'; });
+
+  renderLegend();
+  renderStatCards();
+  renderExplainerCards();
+});
+</script>
+</body>
+</html>
