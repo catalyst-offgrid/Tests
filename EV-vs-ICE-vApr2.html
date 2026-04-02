@@ -324,9 +324,10 @@
 
   <!-- Tab bar -->
   <div class="tabs-bar">
-    <button class="tab active" onclick="setView('map', this)">Map</button>
+    <button class="tab active" onclick="setView('map', this)">Savings Map</button>
     <button class="tab" onclick="setView('table', this)">Data Table</button>
     <button class="tab" onclick="setView('payback', this)">Payback Calculator</button>
+    <button class="tab" onclick="setView('co2', this)">CO₂ Map</button>
   </div>
 
   <!-- ═══ MAP VIEW ═══ -->
@@ -545,9 +546,41 @@
     <div class="stat-grid" id="payback-stats"></div>
   </div>
 
+  <!-- ═══ CO2 MAP VIEW ═══ -->
+  <div id="co2-view" style="display:none">
+    <div class="controls-bar" style="flex-direction: column; align-items: flex-start; gap: 1rem;">
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; width: 100%;">
+        <div class="control-group">
+          <span class="ctrl-label">Gas car MPG</span>
+          <div class="pill-group mpg-pills">
+            <button class="pill" onclick="setMpg(20)">20</button>
+            <button class="pill active" onclick="setMpg(25)">25</button>
+            <button class="pill" onclick="setMpg(30)">30</button>
+            <button class="pill" onclick="setMpg(35)">35</button>
+            <button class="pill" onclick="setMpg(40)">40</button>
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; width: 100%;">
+        <div class="control-group">
+          <span class="ctrl-label">EV</span>
+          <select class="ev-model-select" onchange="handleModelChange(this.value)" style="max-width: 225px; text-overflow: ellipsis;"></select>
+          <select class="ev-year-select" onchange="handleYearChange(this.value)"></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-panel">
+      <div id="co2-map-container"></div>
+      <div class="legend" id="co2-legend"></div>
+    </div>
+
+    <div class="stat-grid" id="co2-stat-cards"></div>
+  </div>
+
   <!-- Formula box -->
   <div class="formula-box">
-    <strong>How to read this:</strong> Green states on the map are where an EV costs less to fuel than the selected gas car; red states are where gasoline is cheaper. The metric is <em>savings per 100 miles</em> = (gas cost) − (EV fuel cost). <strong>At-home charging</strong> uses EIA average residential electricity rates by state for January 2026. <strong>Public charger</strong> uses AAA average Level 2 / DC fast-charging prices by state (March 2026). <strong>Gasoline prices</strong> are AAA state averages by grade (March 2026). <strong>EV charging</strong> calculations assume a standard 90% efficiency rate to account for energy lost as heat. The <strong>Payback Calculator</strong> assumes maintenance costs of ¢9.59/mile for gas cars and ¢7.94/mile for EVs. <strong>Important:</strong> The Map and Table compare fuel costs only — they exclude vehicle purchase price differences, maintenance, insurance, and other ownership costs.
+    <strong>How to read this:</strong> On the <strong>Savings Map</strong>, green states are where an EV costs less to fuel than the selected gas car; red states are where gasoline is cheaper. The metric is <em>savings per 100 miles</em> = (gas cost) − (EV fuel cost). On the <strong>CO₂ Map</strong>, green states show where driving the selected EV avoids the most CO₂ compared to the gas car; lighter shades indicate smaller reductions. The metric is <em>kg CO₂ avoided per 100 miles</em> = (gasoline CO₂) − (grid electricity CO₂). Gasoline emits 8.887 kg CO₂ per gallon burned (GREET). EV emissions depend on each state's electricity grid carbon intensity. <strong>At-home charging</strong> uses EIA average residential electricity rates by state for January 2026. <strong>Public charger</strong> uses AAA average Level 2 / DC fast-charging prices by state (March 2026). <strong>Gasoline prices</strong> are AAA state averages by grade (March 2026). <strong>EV charging</strong> calculations assume a standard 90% efficiency rate to account for energy lost as heat. The <strong>Payback Calculator</strong> assumes maintenance costs of ¢9.59/mile for gas cars and ¢7.94/mile for EVs. <strong>Important:</strong> The Savings Map and Table compare fuel costs only — they exclude vehicle purchase price differences, maintenance, insurance, and other ownership costs.
   </div>
 </main>
 
@@ -556,7 +589,9 @@
   At-home electricity — U.S. EIA Electric Power Monthly, Table 5.6.A, residential average retail price by state, January 2026. ·
   Public EV charging — AAA EV Charging Prices by state (<a href="https://gasprices.aaa.com/ev-charging-prices/" target="_blank">gasprices.aaa.com</a>, March 2026). ·
   Maintenance costs — AAA "Your Driving Costs" study. ·
-  Gasoline prices — AAA State Gas Price Averages by grade (<a href="https://gasprices.aaa.com/state-gas-price-averages/" target="_blank">gasprices.aaa.com</a>, March 2026).
+  Gasoline prices — AAA State Gas Price Averages by grade (<a href="https://gasprices.aaa.com/state-gas-price-averages/" target="_blank">gasprices.aaa.com</a>, March 2026). ·
+  Gasoline CO₂ emissions — Argonne National Laboratory GREET model (8.887 kg CO₂ per gallon). ·
+  Electricity grid emissions intensity — <a href="https://ember-energy.org/data/us-electricity-data/" target="_blank">Ember US Electricity Data</a>, CO₂ intensity by state, 2025.
   <br><br>
   Built with <a href="https://d3js.org" target="_blank">D3.js</a> and <a href="https://github.com/topojson/topojson" target="_blank">TopoJSON</a> using <a href="https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json" target="_blank">US Atlas</a> topology. Inspired by Jesse Jenkins' <a href="https://jessejenkins.github.io/heat-pump-map/" target="_blank">Heat Pump Economics Tool</a>.
 </footer>
@@ -659,6 +694,26 @@ const gasData = {
   "Wisconsin":   {"Regular":3.615,"Mid-Grade":4.136,"Premium":4.707,"Diesel":4.737},
   "Wyoming":     {"Regular":3.846,"Mid-Grade":4.151,"Premium":4.436,"Diesel":4.984}
 };
+
+// Grid CO2 emissions intensity by state (gCO2/kWh) — Ember 2025
+const gridCO2Data = {
+  "Alabama":359.41,"Alaska":416.45,"Arizona":282.98,"Arkansas":420.43,
+  "California":177.11,"Colorado":355.39,"Connecticut":285.38,"Delaware":482.32,
+  "District of Columbia":131.45,"Florida":397.63,"Georgia":317.96,"Hawaii":479.46,
+  "Idaho":156.22,"Illinois":222.41,"Indiana":567.96,"Iowa":275.36,
+  "Kansas":291.52,"Kentucky":671.17,"Louisiana":419.64,"Maine":228.11,
+  "Maryland":270.40,"Massachusetts":371.72,"Michigan":406.76,"Minnesota":305.80,
+  "Mississippi":413.44,"Missouri":587.21,"Montana":333.23,"Nebraska":400.49,
+  "Nevada":299.02,"New Hampshire":169.10,"New Jersey":246.21,"New Mexico":307.04,
+  "New York":247.58,"North Carolina":316.22,"North Dakota":468.41,"Ohio":479.05,
+  "Oklahoma":309.69,"Oregon":184.02,"Pennsylvania":352.61,"Rhode Island":429.84,
+  "South Carolina":259.37,"South Dakota":134.92,"Tennessee":323.65,"Texas":342.52,
+  "Utah":542.89,"Vermont":61.96,"Virginia":327.17,"Washington":124.36,
+  "West Virginia":745.30,"Wisconsin":469.23,"Wyoming":539.33
+};
+
+// Gasoline CO2: 8.887 kg CO2 per gallon (GREET)
+const GASOLINE_KG_CO2_PER_GALLON = 8.887;
 
 // ═══════════════════════════════════════════════
 //  STATE
@@ -845,6 +900,116 @@ function renderStatCards() {
 }
 
 // ═══════════════════════════════════════════════
+//  CO2 CALCULATIONS & RENDERING
+// ═══════════════════════════════════════════════
+const CO2_COLORS = {
+  great:   '#1a4301',
+  good:    '#38761d',
+  moderate:'#6aa84f',
+  slight:  '#b6d7a8',
+  minimal: '#d9ead3',
+  negative:'#e07858',
+  no_data: '#C8C5BC'
+};
+
+const co2StateMap = {};
+
+function calcCO2(state, eff, mpg) {
+  const gridIntensity = gridCO2Data[state];
+  if (gridIntensity == null) return null;
+
+  // Gasoline: kg CO2 per 100 miles
+  const gasCO2 = (100 / mpg) * GASOLINE_KG_CO2_PER_GALLON;
+
+  // EV: kWh per 100 miles (with 90% charging efficiency), then * gCO2/kWh, convert to kg
+  const kwhPer100 = ((eff / 1000) * 100) / 0.9;
+  const evCO2 = (kwhPer100 * gridIntensity) / 1000;
+
+  const avoided = gasCO2 - evCO2;
+  return { name: state, gasCO2, evCO2, avoided, gridIntensity };
+}
+
+function refreshCO2Map() {
+  Object.keys(co2StateMap).forEach(k => delete co2StateMap[k]);
+  Object.keys(gridCO2Data).forEach(state => {
+    const d = calcCO2(state, currentEff, currentMpg);
+    if (d) co2StateMap[state] = d;
+  });
+}
+refreshCO2Map();
+
+function co2ToColor(avoided) {
+  if (avoided == null) return CO2_COLORS.no_data;
+  if (avoided < 0)     return CO2_COLORS.negative;
+  if (avoided < 5)     return CO2_COLORS.minimal;
+  if (avoided < 15)    return CO2_COLORS.slight;
+  if (avoided < 25)    return CO2_COLORS.moderate;
+  if (avoided < 30)    return CO2_COLORS.good;
+  return CO2_COLORS.great;
+}
+
+function getCO2Fill(d) {
+  return d ? co2ToColor(d.avoided) : CO2_COLORS.no_data;
+}
+
+function renderCO2Legend() {
+  document.getElementById('co2-legend').innerHTML = `
+    <span style="font-size:11px;color:var(--text-3);margin-right:4px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;">CO₂ avoided vs gas (kg/100 mi):</span>
+    <span class="legend-item"><span class="swatch" style="background:${CO2_COLORS.great}"></span>&gt;30 kg</span>
+    <span class="legend-item"><span class="swatch" style="background:${CO2_COLORS.good}"></span>25–30 kg</span>
+    <span class="legend-item"><span class="swatch" style="background:${CO2_COLORS.moderate}"></span>15–25 kg</span>
+    <span class="legend-item"><span class="swatch" style="background:${CO2_COLORS.slight}"></span>5–15 kg</span>
+    <span class="legend-item"><span class="swatch" style="background:${CO2_COLORS.minimal}"></span>0–5 kg</span>
+    <span class="legend-item"><span class="swatch" style="background:${CO2_COLORS.negative}"></span>EV emits more</span>
+    <span class="legend-item"><span class="swatch" style="background:${CO2_COLORS.no_data}"></span>No data</span>
+  `;
+}
+
+function renderCO2StatCards() {
+  const data = Object.values(co2StateMap);
+  if (!data.length) return;
+
+  const avgAvoided = data.reduce((s, d) => s + d.avoided, 0) / data.length;
+  const sorted = [...data].sort((a, b) => b.avoided - a.avoided);
+  const best = sorted.slice(0, 3).map(d => d.name).join(', ');
+  const worst = sorted.slice(-3).reverse().map(d => d.name).join(', ');
+  const allPositive = data.filter(d => d.avoided > 0).length;
+
+  document.getElementById('co2-stat-cards').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Avg CO₂ Avoided</div>
+      <div class="stat-val" style="color:#5a9932">${avgAvoided.toFixed(1)} kg</div>
+      <div class="stat-sub">per 100 miles vs gas · national avg</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">States where EV is Cleaner</div>
+      <div class="stat-val">${allPositive}</div>
+      <div class="stat-sub">out of ${data.length} with data</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Most CO₂ Avoided</div>
+      <div class="stat-val" style="font-size:1rem;padding-top:3px">${best}</div>
+      <div class="stat-sub">Cleanest grids for EV driving</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Least CO₂ Avoided</div>
+      <div class="stat-val" style="font-size:1rem;padding-top:3px">${worst}</div>
+      <div class="stat-sub">Dirtiest grids (smallest EV advantage)</div>
+    </div>
+  `;
+}
+
+let co2PathsSel = null;
+
+function updateCO2Map() {
+  refreshCO2Map();
+  if (co2PathsSel) {
+    co2PathsSel.attr('fill', d => getCO2Fill(co2StateMap[d.properties.name]));
+  }
+  renderCO2StatCards();
+}
+
+// ═══════════════════════════════════════════════
 //  MAP UPDATE
 // ═══════════════════════════════════════════════
 function updateMap() {
@@ -865,6 +1030,7 @@ function updateAll() {
   renderTable();
   updatePayback();
   renderExplainerCards();
+  updateCO2Map();
 }
 
 function setMpg(v) {
@@ -971,11 +1137,13 @@ function renderTable() {
 function setView(v, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('map-view').style.display   = v === 'map'   ? '' : 'none';
-  document.getElementById('table-view').style.display = v === 'table' ? '' : 'none';
+  document.getElementById('map-view').style.display     = v === 'map'     ? '' : 'none';
+  document.getElementById('table-view').style.display   = v === 'table'   ? '' : 'none';
   document.getElementById('payback-view').style.display = v === 'payback' ? '' : 'none';
+  document.getElementById('co2-view').style.display     = v === 'co2'     ? '' : 'none';
   if (v === 'table') renderTable();
   if (v === 'payback') updatePayback();
+  if (v === 'co2') updateCO2Map();
 }
 
 
@@ -1170,6 +1338,65 @@ d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json').then(us => {
   renderLegend();
   renderStatCards();
   renderExplainerCards();
+
+  // ── CO2 Map ──
+  const co2Container = document.getElementById('co2-map-container');
+  const co2w = co2Container.clientWidth || 800;
+  const co2h = Math.round(co2w * 0.60);
+
+  const co2svg = d3.select(co2Container).append('svg')
+    .attr('viewBox', `0 0 ${co2w} ${co2h}`)
+    .attr('width', '100%');
+
+  const co2proj = d3.geoAlbersUsa()
+    .scale(co2w * 1.25)
+    .translate([co2w / 2, co2h / 2]);
+
+  const co2path = d3.geoPath(co2proj);
+
+  co2PathsSel = co2svg.append('g').selectAll('path')
+    .data(topojson.feature(us, us.objects.states).features)
+    .join('path')
+    .attr('d', co2path)
+    .attr('stroke', '#fff')
+    .attr('stroke-width', 0.6)
+    .attr('fill', d => getCO2Fill(co2StateMap[d.properties.name]))
+    .style('cursor', 'pointer')
+    .on('mousemove', function(event, d) {
+      const cd = co2StateMap[d.properties.name];
+      if (!cd) return;
+
+      const avSign  = cd.avoided >= 0 ? '+' : '';
+      const avClass = cd.avoided >= 0 ? 'tt-green' : 'tt-red';
+      const avLabel = cd.avoided >= 0 ? 'CO₂ avoided' : 'Extra CO₂';
+
+      tooltip.style.display = 'block';
+      tooltip.style.left    = (event.clientX + 16) + 'px';
+      tooltip.style.top     = (event.clientY - 10) + 'px';
+      tooltip.innerHTML = `
+        <div class="tt-title">${cd.name}</div>
+        <div class="tt-row">
+          <span class="tt-label">Grid intensity</span>
+          <span class="tt-val">${cd.gridIntensity.toFixed(0)} gCO₂/kWh</span>
+        </div>
+        <div class="tt-row">
+          <span class="tt-label">Gas CO₂/100 mi</span>
+          <span class="tt-val">${cd.gasCO2.toFixed(1)} kg</span>
+        </div>
+        <div class="tt-row">
+          <span class="tt-label">EV CO₂/100 mi</span>
+          <span class="tt-val">${cd.evCO2.toFixed(1)} kg</span>
+        </div>
+        <div class="tt-row" style="border-top:1px solid rgba(255,255,255,.15);margin-top:5px;padding-top:5px;">
+          <span class="tt-label">${avLabel}</span>
+          <span class="tt-val ${avClass}">${avSign}${cd.avoided.toFixed(1)} kg/100 mi</span>
+        </div>
+      `;
+    })
+    .on('mouseleave', () => { tooltip.style.display = 'none'; });
+
+  renderCO2Legend();
+  renderCO2StatCards();
 });
 </script>
 </body>
