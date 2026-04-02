@@ -783,7 +783,7 @@ function renderExplainerCards() {
     : currentCharging === 'public'
     ? `${currentEff} Wh/mi · public charger (AAA Mar 2026)`
     : currentCharging === 'mix'
-    ? `${currentEff} Wh/mi · 50/50 home (EIA Jan 2026) / public (AAA Mar 2026)`
+    ? `${currentEff} Wh/mi · home (EIA Jan 2026) / public (AAA Mar 2026)`
     : `${currentEff} Wh/mi · custom pricing`;
 
   document.getElementById('explainer-cards').innerHTML = `
