@@ -784,12 +784,12 @@ function renderExplainerCards() {
 
   document.getElementById('explainer-cards').innerHTML = `
     <div class="exp-card">
-      <div class="exp-label">Avg EV fuel cost / 100 mi</div>
+      <div class="exp-label">EV avg fuel cost / 100 mi</div>
       <div class="exp-val">$${avgEv.toFixed(2)}</div>
       <div class="exp-sub">${chargeSub}</div>
     </div>
     <div class="exp-card">
-      <div class="exp-label">Avg gas car cost / 100 mi</div>
+      <div class="exp-label">ICE car avg gas cost / 100 mi</div>
       <div class="exp-val">$${avgGas.toFixed(2)}</div>
       <div class="exp-sub">${currentMpg} MPG · ${currentGrade} unleaded (AAA Mar 2026)</div>
     </div>
