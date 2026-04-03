@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Household Electricity Consumption Waterfall — Nigeria Archetype</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#FAFAF8;color:#2C2C2A;padding:2rem 2.5rem 3rem}
+.header{max-width:1820px;margin:0 auto 1.5rem}
+.header h1{font-family:'Source Serif 4',Georgia,serif;font-size:1.65rem;font-weight:600;color:#1a1a18;letter-spacing:-0.02em;line-height:1.3}
+.header .subtitle{font-size:0.85rem;color:#888780;margin-top:0.35rem;letter-spacing:0.01em}
+.controls{max-width:1820px;margin:0 auto 1.25rem;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.scenario-toggle{display:flex;border:1px solid #D3D1C7;border-radius:8px;overflow:hidden}
+.scenario-btn{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:7px 18px;border:none;cursor:pointer;transition:all 0.15s;background:#fff;color:#5F5E5A}
+.scenario-btn.active{background:#2C2C2A;color:#FAFAF8}
+.scenario-btn:hover:not(.active){background:#F1EFE8}
+.scenario-label{font-size:12px;color:#888780}
+.scenario-summary{font-size:12.5px;color:#5F5E5A;margin-left:auto;text-align:right;line-height:1.7}
+.scenario-summary strong{font-weight:700;color:#2C2C2A}
+
+/* Cost slider */
+.cost-control{display:flex;align-items:center;gap:10px;margin-left:16px}
+.cost-label{font-size:12px;color:#888780}
+.cost-slider{-webkit-appearance:none;appearance:none;width:120px;height:4px;border-radius:2px;background:#D3D1C7;outline:none}
+.cost-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:#2C2C2A;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.15)}
+.cost-slider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#2C2C2A;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.15)}
+.cost-value{font-size:12px;font-weight:700;color:#2C2C2A;min-width:52px}
+
+.main-layout{max-width:1820px;margin:0 auto;display:flex;gap:24px;align-items:flex-start}
+
+/* Sidebar */
+.sidebar{width:300px;flex-shrink:0;background:#fff;border:1px solid #E8E7E2;border-radius:10px;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.sidebar-header{padding:12px 16px;border-bottom:1px solid #E8E7E2;display:flex;justify-content:space-between;align-items:center}
+.sidebar-title{font-size:13px;font-weight:700;color:#1a1a18}
+.sidebar-actions{display:flex;gap:6px}
+.sidebar-action-btn{font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:500;padding:4px 10px;border-radius:5px;border:1px solid #D3D1C7;background:#fff;color:#5F5E5A;cursor:pointer;transition:all 0.15s}
+.sidebar-action-btn:hover{background:#F1EFE8}
+.sidebar-list{list-style:none;flex:1;overflow-y:auto;min-height:0;padding:4px 0}
+.sidebar-item{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 8px;border-bottom:1px solid #F5F4F0;cursor:grab;transition:background 0.12s;user-select:none;position:relative}
+.sidebar-item:active{cursor:grabbing}
+.sidebar-item:hover{background:#F9F8F5}
+.sidebar-item.dragging{opacity:0.4;background:#F1EFE8}
+.sidebar-item.drag-over-top{box-shadow:inset 0 2px 0 0 #378ADD}
+.sidebar-item.drag-over-bottom{box-shadow:inset 0 -2px 0 0 #378ADD}
+.sidebar-item.disabled{opacity:0.45}
+.sidebar-item .drag-handle{color:#C4C3BD;font-size:14px;flex-shrink:0;width:16px;text-align:center;line-height:1}
+.sidebar-item input[type="checkbox"]{accent-color:#2C2C2A;width:14px;height:14px;flex-shrink:0;cursor:pointer}
+.sidebar-item .item-color{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.sidebar-item .item-info{flex:1;min-width:0}
+.sidebar-item .item-name{font-size:11.5px;color:#2C2C2A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;display:block;margin-bottom:2px}
+.sidebar-item .item-kwh{font-size:10px;color:#888780;font-weight:500;display:block}
+
+.chart-area{flex:1;min-width:0}
+.chart-container{position:relative}
+.chart-wrapper{width:100%;overflow-x:auto;padding-bottom:0.5rem}
+.chart-inner{min-width:700px;height:650px;position:relative}
+svg{width:100%;height:100%;display:block}
+.bar-block{cursor:pointer;transition:opacity 0.15s}
+.bar-block:hover{opacity:0.85}
+.threshold-line{stroke-dasharray:6,4;stroke-width:1}
+.threshold-label{font-size:10px;fill:#888780;font-family:'DM Sans',sans-serif}
+.axis-label{font-size:10.5px;fill:#5F5E5A;font-family:'DM Sans',sans-serif}
+.axis-title{font-size:11px;fill:#5F5E5A;font-family:'DM Sans',sans-serif;font-weight:500}
+.gridline{stroke:#E8E7E2;stroke-width:0.5}
+.tooltip{position:fixed;background:#fff;border:1px solid #D3D1C7;border-radius:8px;padding:12px 16px;font-size:12.5px;line-height:1.65;box-shadow:0 4px 20px rgba(0,0,0,0.08);pointer-events:none;opacity:0;transition:opacity 0.12s;z-index:100;max-width:280px}
+.tooltip .tt-name{font-weight:700;font-size:13px;margin-bottom:4px;color:#1a1a18}
+.tooltip .tt-cat{display:inline-block;padding:1px 8px;border-radius:4px;font-size:10.5px;font-weight:500;margin-bottom:6px}
+.tooltip .tt-row{display:flex;justify-content:space-between;gap:16px}
+.tooltip .tt-label{color:#888780}
+.tooltip .tt-val{font-weight:500;color:#2C2C2A}
+.legend{margin:1.25rem 0 0;display:flex;flex-wrap:wrap;gap:14px 20px;font-size:12px;color:#5F5E5A}
+.legend-item{display:flex;align-items:center;gap:5px}
+.legend-swatch{width:12px;height:12px;border-radius:2px}
+.thresholds-toggle{margin:1rem 0 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.thresh-btn{font-family:'DM Sans',sans-serif;font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid #D3D1C7;background:#fff;color:#5F5E5A;cursor:pointer;transition:all 0.15s}
+.thresh-btn.active{background:#2C2C2A;color:#FAFAF8;border-color:#2C2C2A}
+.thresh-btn:hover:not(.active){background:#F1EFE8}
+.note{margin:1.5rem 0 0;font-size:11.5px;color:#888780;line-height:1.6}
+
+/* Tier badges in sidebar */
+.tier-marker{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:flex;gap:3px}
+.tier-badge{font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;line-height:1.4}
+
+@media(max-width:960px){
+  .main-layout{flex-direction:column}
+  .sidebar{width:100%;max-width:100%}
+  .sidebar-list{max-height:260px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>Household electricity consumption waterfall — Nigeria archetype</h1>
+<div class="subtitle" id="subtitle">Efficient scenario · Household size: 5 · Per capita kWh/year</div>
+</div>
+
+<div class="controls">
+<span class="scenario-label">Scenario:</span>
+<div class="scenario-toggle" id="scenarioToggle">
+<button class="scenario-btn active" data-scenario="efficient">Efficient</button>
+<button class="scenario-btn" data-scenario="typical">Typical</button>
+</div>
+<div class="cost-control">
+  <span class="cost-label">Electricity cost:</span>
+  <input type="range" class="cost-slider" id="costSlider" min="10" max="30" value="15" step="1">
+  <span class="cost-value" id="costValue">$0.15/kWh</span>
+</div>
+<div class="scenario-summary" id="scenarioSummary"></div>
+</div>
+
+<div class="main-layout">
+<div class="sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-title">Appliances</span>
+    <div class="sidebar-actions">
+      <button class="sidebar-action-btn" id="btnSelectAll">All on</button>
+      <button class="sidebar-action-btn" id="btnSelectNone">All off</button>
+      <button class="sidebar-action-btn" id="btnReset">Reset order</button>
+    </div>
+  </div>
+  <ul class="sidebar-list" id="sidebarList"></ul>
+</div>
+<div class="chart-area">
+  <div class="chart-container">
+    <div class="chart-wrapper">
+      <div class="chart-inner" id="chartArea"></div>
+    </div>
+  </div>
+  <div class="legend" id="legend"></div>
+  <div class="thresholds-toggle" id="threshToggle"></div>
+  <div class="note">
+  Source: Catalyst Energy Advisors analysis for the Rockefeller Foundation. Appliance ownership sequencing informed by Nigeria General Household Survey Panel Wave 5.
+  Efficient scenario assumes modern, best-available-but-affordable technology. Typical scenario reflects appliances commonly purchased in sub-Saharan African markets today.
+  All figures assume 100% electrification of each activity. Drag appliances to reorder; uncheck to remove from the waterfall.
+  </div>
+</div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const masterAppliances = [
+  {name:"Lighting (full home)",blockEff:17.52,blockTyp:24.528,cat:"Lighting"},
+  {name:"Phones, radio & small devices",blockEff:5.475,blockTyp:6.204,cat:"Information"},
+  {name:"Fan (1st unit)",blockEff:39.42,blockTyp:48.18,cat:"Comfort"},
+  {name:"Television (1st unit)",blockEff:12.775,blockTyp:18.25,cat:"Information"},
+  {name:"Pressing iron",blockEff:20.8,blockTyp:24.96,cat:"Laundry"},
+  {name:"Fan (2nd unit)",blockEff:32.85,blockTyp:40.15,cat:"Comfort"},
+  {name:"Refrigerator",blockEff:73.584,blockTyp:161.184,cat:"Food Preservation"},
+  {name:"Kettle & blender",blockEff:30.66,blockTyp:38.324,cat:"Small Appliances"},
+  {name:"Laptop & internet",blockEff:17.52,blockTyp:25.184,cat:"Information"},
+  {name:"Borehole water pump (shared)",blockEff:4.5625,blockTyp:4.562,cat:"Infrastructure"},
+  {name:"Chest freezer",blockEff:73.584,blockTyp:145.416,cat:"Food Preservation"},
+  {name:"Air conditioner (1st unit)",blockEff:210,blockTyp:357,cat:"Space Cooling"},
+  {name:"Microwave oven",blockEff:10,blockTyp:12,cat:"Cooking"},
+  {name:"Fan (3rd unit)",blockEff:26.28,blockTyp:32.12,cat:"Comfort"},
+  {name:"Television (2nd unit)",blockEff:5.11,blockTyp:7.3,cat:"Information"},
+  {name:"AC (2nd & 3rd unit)",blockEff:240,blockTyp:408,cat:"Space Cooling"},
+  {name:"Washing machine",blockEff:5.85,blockTyp:7.8,cat:"Laundry"},
+  {name:"Kitchen extractor",blockEff:10.5,blockTyp:15.75,cat:"Cooking"},
+  {name:"Home security (CCTV)",blockEff:52.56,blockTyp:78.84,cat:"Security"},
+  {name:"Electric pressure cooker",blockEff:61.32,blockTyp:78.84,cat:"Cooking"},
+  {name:"Electric hob",blockEff:73,blockTyp:102.2,cat:"Cooking"},
+  {name:"Electric motorcycle",blockEff:51.584,blockTyp:73.904,cat:"Mobility"},
+  {name:"Water heater",blockEff:52.083,blockTyp:72.916,cat:"Hot Water"},
+  {name:"Electric car",blockEff:273.728,blockTyp:368.928,cat:"Mobility"},
+  {name:"Electric oven",blockEff:46.8,blockTyp:61.2,cat:"Cooking"},
+  {name:"Dishwasher",blockEff:49.92,blockTyp:58.24,cat:"Small Appliances"},
+  {name:"Clothes dryer",blockEff:12.96,blockTyp:31.68,cat:"Laundry"}
+];
+
+// State
+let applianceOrder = masterAppliances.map((_,i) => i);
+let applianceEnabled = masterAppliances.map(() => true);
+let currentScenario = "efficient";
+let costPerKwh = 0.15;
+
+const catColors = {
+  "Lighting":"#EF9F27","Information":"#3266ad","Comfort":"#378ADD","Laundry":"#73726c",
+  "Small Appliances":"#97C459","Food Preservation":"#1D9E75","Cooking":"#D85A30",
+  "Space Cooling":"#7F77DD","Infrastructure":"#888780","Security":"#444441",
+  "Mobility":"#BA7517","Hot Water":"#D4537E"
+};
+
+const catTooltipBg = {
+  "Lighting":"#FAEEDA","Information":"#E6F1FB","Comfort":"#E6F1FB","Laundry":"#F1EFE8",
+  "Small Appliances":"#EAF3DE","Food Preservation":"#E1F5EE","Cooking":"#FAECE7",
+  "Space Cooling":"#EEEDFE","Infrastructure":"#F1EFE8","Security":"#F1EFE8",
+  "Mobility":"#FAEEDA","Hot Water":"#FBEAF0"
+};
+
+const catTooltipText = {
+  "Lighting":"#633806","Information":"#0C447C","Comfort":"#0C447C","Laundry":"#444441",
+  "Small Appliances":"#27500A","Food Preservation":"#085041","Cooking":"#712B13",
+  "Space Cooling":"#3C3489","Infrastructure":"#444441","Security":"#2C2C2A",
+  "Mobility":"#633806","Hot Water":"#72243E"
+};
+
+const thresholds = [
+  {label:"MTF Tier 3",val:73,color:"#97C459"},
+  {label:"MEM / MTF Tier 4",val:250,color:"#378ADD"},
+  {label:"1 MWh HH / 4 MWh Total",val:1000,color:"#D85A30"},
+  {label:"US residential (4,381)",val:4381,color:"#7F77DD"}
+];
+
+let activeThresh = new Set(["MTF Tier 3","MEM / MTF Tier 4","1 MWh HH / 4 MWh Total"]);
+
+const margin = {top:20,right:160,bottom:120,left:58};
+const chartEl = document.getElementById("chartArea");
+const ttEl = document.getElementById("tooltip");
+
+function getActiveData(){
+  const isEff = currentScenario === "efficient";
+  const result = [];
+  let cumul = 0;
+  for(const idx of applianceOrder){
+    if(!applianceEnabled[idx]) continue;
+    const m = masterAppliances[idx];
+    const block = isEff ? m.blockEff : m.blockTyp;
+    result.push({name:m.name, base:cumul, block:block, cat:m.cat, cumul:cumul+block, masterIdx:idx});
+    cumul += block;
+  }
+  return result;
+}
+
+function getTierCrossings(data){
+  const crossings = {};
+  for(const d of data){
+    const crossed = [];
+    for(const t of thresholds){
+      if(d.base < t.val && d.cumul >= t.val) crossed.push(t);
+    }
+    if(crossed.length) crossings[d.masterIdx] = crossed;
+  }
+  return crossings;
+}
+
+function formatCost(dollars){
+  if(dollars >= 1) return "$" + dollars.toFixed(2);
+  return "$" + dollars.toFixed(2);
+}
+
+function updateSummary(){
+  const data = getActiveData();
+  const total = data.length ? data[data.length-1].cumul : 0;
+  const count = data.length;
+  const scenarioName = currentScenario === "efficient" ? "Efficient" : "Typical";
+  document.getElementById("subtitle").textContent = scenarioName + " scenario \u00B7 Household size: 5 \u00B7 Per capita kWh/year \u00B7 " + count + " of " + masterAppliances.length + " appliances";
+
+  const monthlyCostCap = (total * costPerKwh) / 12;
+  const monthlyCostHH = (total * 5 * costPerKwh) / 12;
+
+  document.getElementById("scenarioSummary").innerHTML =
+    "Annual consumption: <strong>" + Math.round(total).toLocaleString() + " kWh/cap</strong> \u00B7 <strong>" + Math.round(total*5).toLocaleString() + " kWh/household</strong><br>" +
+    "Monthly electricity cost: <strong>" + formatCost(monthlyCostCap) + "/cap</strong> \u00B7 <strong>" + formatCost(monthlyCostHH) + "/household</strong>";
+}
+
+function render(){
+  const data = getActiveData();
+  const W = Math.max(chartEl.clientWidth, 700);
+  const H = 650;
+  const plotW = W - margin.left - margin.right;
+  const plotH = H - margin.top - margin.bottom;
+
+  const dataMax = data.length ? data[data.length-1].cumul : 100;
+  const maxVal = Math.max(dataMax, ...Array.from(activeThresh).map(t=>thresholds.find(x=>x.label===t)?.val||0));
+  const yMax = Math.ceil(maxVal / 200) * 200 + 100;
+
+  const n = data.length || 1;
+  // Use at least 15 slots so bars fill the full width until the 16th is added
+  const nLayout = Math.max(n, 15);
+  const barW = Math.max(14, Math.min(30, (plotW / nLayout) * 0.7));
+  const gap = nLayout > 1 ? (plotW - barW * nLayout) / (nLayout - 1) : 0;
+
+  const scaleY = v => plotH - (v / yMax) * plotH;
+  const barX = i => i * (barW + gap);
+
+  const gridSteps = [];
+  const gridInterval = yMax <= 600 ? 100 : yMax <= 1200 ? 200 : yMax <= 3000 ? 500 : 1000;
+  for(let v = 0; v <= yMax; v += gridInterval) gridSteps.push(v);
+
+  let svg = '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">';
+  svg += '<g transform="translate('+margin.left+','+margin.top+')">';
+
+  gridSteps.forEach(function(v){
+    var y = scaleY(v);
+    svg += '<line x1="0" y1="'+y+'" x2="'+plotW+'" y2="'+y+'" class="gridline"/>';
+    svg += '<text x="-8" y="'+(y+3.5)+'" text-anchor="end" class="axis-label">'+v.toLocaleString()+'</text>';
+  });
+
+  svg += '<text x="-42" y="'+(plotH/2)+'" transform="rotate(-90,-42,'+(plotH/2)+')" text-anchor="middle" class="axis-title">Per capita kWh / year</text>';
+
+  if(data.length === 0){
+    svg += '<text x="'+(plotW/2)+'" y="'+(plotH/2)+'" text-anchor="middle" class="axis-title" style="font-size:14px;fill:#888780">Enable appliances to build the waterfall</text>';
+  }
+
+  data.forEach(function(d,i){
+    var x = barX(i);
+    var yTop = scaleY(d.base + d.block);
+    var yBot = scaleY(d.base);
+    var barH = yBot - yTop;
+    var col = catColors[d.cat] || "#888";
+
+    if(i > 0){
+      var prevX = barX(i-1);
+      var connY = scaleY(d.base);
+      svg += '<line x1="'+(prevX + barW)+'" y1="'+connY+'" x2="'+x+'" y2="'+connY+'" stroke="#D3D1C7" stroke-width="0.5" stroke-dasharray="2,2"/>';
+    }
+
+    svg += '<rect class="bar-block" data-idx="'+i+'" x="'+x+'" y="'+yTop+'" width="'+barW+'" height="'+Math.max(barH,1)+'" rx="2" fill="'+col+'"/>';
+
+    var labelX = x + barW/2;
+    var labelY = plotH + 12;
+    svg += '<text x="'+labelX+'" y="'+labelY+'" text-anchor="end" transform="rotate(-50,'+labelX+','+labelY+')" class="axis-label" style="font-size:9.5px">'+d.name+'</text>';
+  });
+
+  thresholds.forEach(function(t){
+    if(!activeThresh.has(t.label)) return;
+    if(t.val > yMax) return;
+    var y = scaleY(t.val);
+    svg += '<line x1="0" y1="'+y+'" x2="'+plotW+'" y2="'+y+'" class="threshold-line" stroke="'+t.color+'"/>';
+    svg += '<text x="'+(plotW + 4)+'" y="'+(y + 3)+'" class="threshold-label" fill="'+t.color+'" style="font-weight:500">'+t.label+'</text>';
+  });
+
+  svg += '</g></svg>';
+  chartEl.innerHTML = svg;
+
+  document.querySelectorAll(".bar-block").forEach(function(el){
+    el.addEventListener("mouseenter", function(e){
+      var d = data[+el.dataset.idx];
+      var bg = catTooltipBg[d.cat]||"#F1EFE8";
+      var tc = catTooltipText[d.cat]||"#2C2C2A";
+      ttEl.innerHTML =
+        '<div class="tt-name">'+d.name+'</div>'+
+        '<div class="tt-cat" style="background:'+bg+';color:'+tc+'">'+d.cat+'</div>'+
+        '<div class="tt-row"><span class="tt-label">Per capita</span><span class="tt-val">'+Math.round(d.block)+' kWh/yr</span></div>'+
+        '<div class="tt-row"><span class="tt-label">Household (\u00D75)</span><span class="tt-val">'+Math.round(d.block*5).toLocaleString()+' kWh/yr</span></div>'+
+        '<div class="tt-row" style="border-top:1px solid #E8E7E2;padding-top:4px;margin-top:4px"><span class="tt-label">Cumulative per capita</span><span class="tt-val" style="font-weight:700">'+Math.round(d.cumul).toLocaleString()+' kWh</span></div>'+
+        '<div class="tt-row"><span class="tt-label">Cumulative household</span><span class="tt-val">'+Math.round(d.cumul*5).toLocaleString()+' kWh</span></div>';
+      ttEl.style.opacity = "1";
+    });
+    el.addEventListener("mousemove", function(e){
+      var x = e.clientX + 14;
+      var y = e.clientY - 10;
+      ttEl.style.left = (x + ttEl.offsetWidth > window.innerWidth - 20 ? e.clientX - ttEl.offsetWidth - 14 : x) + "px";
+      ttEl.style.top = Math.max(10, y) + "px";
+    });
+    el.addEventListener("mouseleave", function(){ ttEl.style.opacity = "0"; });
+  });
+
+  updateSummary();
+  renderSidebar();
+
+  // Match sidebar height to chart-area column
+  requestAnimationFrame(function(){
+    var chartArea = document.querySelector(".chart-area");
+    var sidebar = document.querySelector(".sidebar");
+    if(chartArea && sidebar){
+      sidebar.style.height = chartArea.offsetHeight + "px";
+    }
+  });
+}
+
+// ─── Sidebar rendering & drag-and-drop ───
+
+let dragSrcIndex = null;
+
+function renderSidebar(){
+  const listEl = document.getElementById("sidebarList");
+  const isEff = currentScenario === "efficient";
+  const data = getActiveData();
+  const crossings = getTierCrossings(data);
+
+  const cumulByMaster = {};
+  for(const d of data) cumulByMaster[d.masterIdx] = d.cumul;
+
+  listEl.innerHTML = "";
+  applianceOrder.forEach(function(masterIdx, pos){
+    const m = masterAppliances[masterIdx];
+    const enabled = applianceEnabled[masterIdx];
+    const block = isEff ? m.blockEff : m.blockTyp;
+    const col = catColors[m.cat] || "#888";
+
+    const li = document.createElement("li");
+    li.className = "sidebar-item" + (enabled ? "" : " disabled");
+    li.draggable = true;
+    li.dataset.pos = pos;
+
+    let badgeHtml = "";
+    if(enabled && crossings[masterIdx]){
+      badgeHtml = '<span class="tier-marker">';
+      for(const t of crossings[masterIdx]){
+        badgeHtml += '<span class="tier-badge" style="background:'+t.color+'22;color:'+t.color+'">'+t.label.replace("MTF ","").replace("MEM / MTF ","").replace("1 MWh HH / 4 MWh Total","1 MWh")+'</span>';
+      }
+      badgeHtml += '</span>';
+    }
+
+    li.innerHTML =
+      '<span class="drag-handle">&#x2630;</span>'+
+      '<input type="checkbox" '+(enabled?'checked':'')+' data-master="'+masterIdx+'">'+
+      '<span class="item-color" style="background:'+col+'"></span>'+
+      '<span class="item-info" style="padding-right:'+(crossings[masterIdx]?'60':'0')+'px">'+
+        '<span class="item-name" title="'+m.name+'">'+m.name+'</span>'+
+        '<span class="item-kwh">'+Math.round(block)+' kWh/cap'+(enabled && cumulByMaster[masterIdx] !== undefined ? ' \u00B7 \u03A3 '+Math.round(cumulByMaster[masterIdx]).toLocaleString() : '')+'</span>'+
+      '</span>'+
+      badgeHtml;
+
+    li.querySelector("input").addEventListener("change", function(e){
+      applianceEnabled[masterIdx] = e.target.checked;
+      render();
+    });
+
+    li.addEventListener("dragstart", function(e){
+      dragSrcIndex = pos;
+      li.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", pos);
+    });
+
+    li.addEventListener("dragend", function(){
+      li.classList.remove("dragging");
+      document.querySelectorAll(".sidebar-item").forEach(el => {
+        el.classList.remove("drag-over-top","drag-over-bottom");
+      });
+      dragSrcIndex = null;
+    });
+
+    li.addEventListener("dragover", function(e){
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      const rect = li.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      li.classList.remove("drag-over-top","drag-over-bottom");
+      if(e.clientY < midY){
+        li.classList.add("drag-over-top");
+      } else {
+        li.classList.add("drag-over-bottom");
+      }
+    });
+
+    li.addEventListener("dragleave", function(){
+      li.classList.remove("drag-over-top","drag-over-bottom");
+    });
+
+    li.addEventListener("drop", function(e){
+      e.preventDefault();
+      li.classList.remove("drag-over-top","drag-over-bottom");
+      const fromPos = dragSrcIndex;
+      if(fromPos === null) return;
+      let toPos = pos;
+      const rect = li.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      if(e.clientY >= midY) toPos += 1;
+      if(fromPos === toPos || fromPos + 1 === toPos) return;
+
+      const item = applianceOrder.splice(fromPos, 1)[0];
+      const insertAt = toPos > fromPos ? toPos - 1 : toPos;
+      applianceOrder.splice(insertAt, 0, item);
+      render();
+    });
+
+    listEl.appendChild(li);
+  });
+}
+
+// ─── Legend ───
+var legendEl = document.getElementById("legend");
+var cats = [];
+masterAppliances.forEach(function(d){ if(cats.indexOf(d.cat)===-1) cats.push(d.cat); });
+cats.forEach(function(c){
+  legendEl.innerHTML += '<span class="legend-item"><span class="legend-swatch" style="background:'+catColors[c]+'"></span>'+c+'</span>';
+});
+
+// ─── Scenario toggle ───
+document.querySelectorAll(".scenario-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    document.querySelectorAll(".scenario-btn").forEach(function(b){b.classList.remove("active");});
+    btn.classList.add("active");
+    currentScenario = btn.dataset.scenario;
+    render();
+  });
+});
+
+// ─── Cost slider ───
+var costSliderEl = document.getElementById("costSlider");
+var costValueEl = document.getElementById("costValue");
+costSliderEl.addEventListener("input", function(){
+  costPerKwh = parseInt(costSliderEl.value) / 100;
+  costValueEl.textContent = "$" + costPerKwh.toFixed(2) + "/kWh";
+  updateSummary();
+});
+
+// ─── Sidebar action buttons ───
+document.getElementById("btnSelectAll").addEventListener("click", function(){
+  applianceEnabled = masterAppliances.map(() => true);
+  render();
+});
+document.getElementById("btnSelectNone").addEventListener("click", function(){
+  applianceEnabled = masterAppliances.map(() => false);
+  render();
+});
+document.getElementById("btnReset").addEventListener("click", function(){
+  applianceOrder = masterAppliances.map((_,i) => i);
+  applianceEnabled = masterAppliances.map(() => true);
+  render();
+});
+
+// ─── Threshold toggles ───
+var toggleEl = document.getElementById("threshToggle");
+toggleEl.innerHTML = '<span style="font-size:11px;color:#888780;margin-right:4px">Thresholds:</span>';
+thresholds.forEach(function(t){
+  var btn = document.createElement("button");
+  btn.className = "thresh-btn" + (activeThresh.has(t.label) ? " active" : "");
+  btn.textContent = t.label;
+  btn.onclick = function(){
+    if(activeThresh.has(t.label)) activeThresh.delete(t.label); else activeThresh.add(t.label);
+    btn.classList.toggle("active");
+    render();
+  };
+  toggleEl.appendChild(btn);
+});
+
+render();
+window.addEventListener("resize", render);
+</script>
+</body>
+</html>
